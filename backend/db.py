@@ -30,10 +30,21 @@ if os.environ.get("VERCEL"):
     DB_PATH = "/tmp/erowho.db"           # Vercel: writable but ephemeral
 elif _db_url.startswith("sqlite:///"):
     DB_PATH = _db_url[10:]
+elif _db_url.startswith("postgres://") or _db_url.startswith("postgresql://"):
+    # Postgres/Supabase DATABASE_URL detected but not yet supported.
+    # The backend uses raw sqlite3. To enable Postgres:
+    #   pip install sqlalchemy psycopg2-binary
+    #   Replace sqlite3 calls in db.py with SQLAlchemy.
+    #   Run backend/schema.sql on your Supabase project first.
+    print(
+        "WARNING: Postgres DATABASE_URL is set but Postgres support is not yet implemented.\n"
+        "  The backend will use local SQLite as a fallback.\n"
+        "  To enable Postgres, add SQLAlchemy + psycopg2-binary and update backend/db.py.\n"
+        f"  DATABASE_URL={_db_url[:40]}..."
+    )
+    DB_PATH = os.path.join(BASE_DIR, "erowho.db")
 else:
     DB_PATH = os.path.join(BASE_DIR, "erowho.db")
-# NOTE: postgres:// DATABASE_URL is not yet supported.
-# Add SQLAlchemy + psycopg2-binary and replace sqlite3 calls to enable it.
 
 # ── Admin seed credentials (demo-only defaults) ────────────────────────────────
 ADMIN_USER = os.environ.get("ADMIN_USERNAME", "admin")

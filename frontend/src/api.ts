@@ -2,13 +2,13 @@
  * Erowho Holdings Limited — API client
  * All communication with the Flask backend goes through this module.
  *
- * API_BASE resolution order:
- *   1. window.API_BASE set in index.html (empty string in production → same-origin)
- *   2. Hostname check: localhost → http://localhost:5001
- *   3. Default: same origin ("")
- *
- * To point at a separate backend in production, set window.API_BASE
- * (or VITE_API_BASE_URL if migrating to Vite) to the full backend URL.
+ * API base URL resolution order:
+ *   1. VITE_API_BASE_URL — build-time env var (Vite / esbuild --define).
+ *      Set this when migrating to a separate frontend deploy or Vite build.
+ *   2. window.API_BASE — runtime injection set in frontend/dist/index.html.
+ *      Empty string ("") explicitly means same-origin. Vercel sets this to "".
+ *   3. Hostname check — localhost/127.0.0.1 → http://localhost:5001 (dev).
+ *   4. Empty string fallback — same-origin via relative fetch URLs (production).
  */
 
 function resolveBase(): string {

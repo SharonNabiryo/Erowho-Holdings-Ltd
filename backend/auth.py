@@ -18,7 +18,10 @@ except ImportError:
     sys.exit(1)
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "erowho-dev-secret-change-in-production")
-TOKEN_TTL_SECONDS = int(os.environ.get("TOKEN_TTL_SECONDS", str(60 * 60 * 24 * 7)))
+try:
+    TOKEN_TTL_SECONDS = int(os.environ.get("TOKEN_TTL_SECONDS") or "")
+except (ValueError, TypeError):
+    TOKEN_TTL_SECONDS = 60 * 60 * 24 * 7  # 7 days — safe fallback for invalid/missing value
 
 
 def make_token(username: str) -> str:
