@@ -1,9 +1,27 @@
 /**
- * Erowho Holdings — API client
- * All communication with the Flask backend goes through here.
+ * Erowho Holdings Limited — API client
+ * All communication with the Flask backend goes through this module.
+ *
+ * API_BASE resolution order:
+ *   1. window.API_BASE set in index.html (empty string in production → same-origin)
+ *   2. Hostname check: localhost → http://localhost:5001
+ *   3. Default: same origin ("")
+ *
+ * To point at a separate backend in production, set window.API_BASE
+ * (or VITE_API_BASE_URL if migrating to Vite) to the full backend URL.
  */
 
-const BASE = (window as any).API_BASE || "http://localhost:5001";
+function resolveBase(): string {
+  const w = window as any;
+  // window.API_BASE is set explicitly in index.html. Empty string means same-origin.
+  if (typeof w.API_BASE === "string") return w.API_BASE;
+  // Fallback: localhost dev server
+  const h = window.location.hostname;
+  if (h === "localhost" || h === "127.0.0.1") return "http://localhost:5001";
+  return "";
+}
+
+const BASE = resolveBase();
 
 function getToken(): string | null {
   return localStorage.getItem("erowho_token");
@@ -13,7 +31,7 @@ async function request<T>(
   method: string,
   path: string,
   body?: unknown,
-  auth = false
+  auth = false,
 ): Promise<T> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (auth) {
@@ -25,18 +43,20 @@ async function request<T>(
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((data as any).error || `HTTP ${res.status}`);
+  const data = await res.json().catch(() => ({})) as any;
+  if (!res.ok) {
+    throw new Error(data.error || data.message || `Request failed (${res.status})`);
+  }
   return data as T;
 }
 
-const get  = <T>(path: string, auth = false) => request<T>("GET", path, undefined, auth);
-const post = <T>(path: string, body: unknown, auth = false) => request<T>("POST", path, body, auth);
-const put  = <T>(path: string, body: unknown) => request<T>("PUT", path, body, true);
-const del  = <T>(path: string) => request<T>("DELETE", path, undefined, true);
-const patch = <T>(path: string, body: unknown) => request<T>("PATCH", path, body, true);
+const get   = <T>(path: string, auth = false)           => request<T>("GET",    path, undefined, auth);
+const post  = <T>(path: string, body: unknown, auth = false) => request<T>("POST",   path, body,      auth);
+const put   = <T>(path: string, body: unknown)           => request<T>("PUT",    path, body,      true);
+const del   = <T>(path: string)                          => request<T>("DELETE", path, undefined,  true);
+const patch = <T>(path: string, body: unknown)           => request<T>("PATCH",  path, body,      true);
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// ── Types ──────────────────────────────────────────────────────────────────────
 export interface Property {
   id: number;
   title: string;
@@ -81,48 +101,52 @@ export interface Stats {
   new_inquiries: number;
 }
 
-export type PropertyFilters = {
+export interface PropertyFilters {
   q?: string;
   country?: string;
+  city?: string;
   property_type?: string;
   bedrooms?: string;
+  bathrooms?: string;
   status?: string;
+  min_rent?: string;
   max_rent?: string;
-};
+}
 
-// ── Auth ──────────────────────────────────────────────────────────────────────
+// ── Auth ───────────────────────────────────────────────────────────────────────
 export const api = {
   auth: {
     login: (username: string, password: string) =>
       post<{ token: string; username: string }>("/api/auth/login", { username, password }),
     verify: () => get<{ valid: boolean; username: string }>("/api/auth/verify", true),
     changePassword: (current_password: string, new_password: string) =>
-      post("/api/admin/change-password", { current_password, new_password }, true),
+      post<{ success: boolean }>("/api/admin/change-password", { current_password, new_password }, true),
   },
 
   // ── Public ──────────────────────────────────────────────────────────────────
   properties: {
     list: (filters: PropertyFilters = {}) => {
       const params = new URLSearchParams();
-      Object.entries(filters).forEach(([k, v]) => { if (v) params.set(k, v); });
+      (Object.entries(filters) as [string, string | undefined][]).forEach(([k, v]) => {
+        if (v) params.set(k, v);
+      });
       const qs = params.toString();
       return get<Property[]>(`/api/properties${qs ? "?" + qs : ""}`);
     },
-    get: (id: number) => get<Property>(`/api/properties/${id}`),
+    get:       (id: number)   => get<Property>(`/api/properties/${id}`),
     getBySlug: (slug: string) => get<Property>(`/api/properties/slug/${slug}`),
   },
 
-  // ── Admin ───────────────────────────────────────────────────────────────────
+  // ── Admin ────────────────────────────────────────────────────────────────────
   admin: {
-    listProperties: () => get<Property[]>("/api/admin/properties", true),
-    createProperty: (data: Partial<Property>) => post<Property>("/api/admin/properties", data, true),
-    updateProperty: (id: number, data: Partial<Property>) => put<Property>(`/api/admin/properties/${id}`, data),
-    deleteProperty: (id: number) => del<{ deleted: boolean }>(`/api/admin/properties/${id}`),
-    togglePublish: (id: number) => patch<Property>(`/api/admin/properties/${id}/publish`, {}),
-    listInquiries: () => get<Inquiry[]>("/api/admin/inquiries", true),
-    updateInquiryStatus: (id: number, status: string) =>
-      patch(`/api/admin/inquiries/${id}`, { status }),
-    getStats: () => get<Stats>("/api/admin/stats", true),
+    listProperties:  ()                              => get<Property[]>("/api/admin/properties", true),
+    createProperty:  (data: Partial<Property>)       => post<Property>("/api/admin/properties", data, true),
+    updateProperty:  (id: number, data: Partial<Property>) => put<Property>(`/api/admin/properties/${id}`, data),
+    deleteProperty:  (id: number)                    => del<{ success: boolean; deleted: number }>(`/api/admin/properties/${id}`),
+    togglePublish:   (id: number)                    => patch<Property>(`/api/admin/properties/${id}/publish`, {}),
+    listInquiries:   ()                              => get<Inquiry[]>("/api/admin/inquiries", true),
+    updateInquiryStatus: (id: number, status: string) => patch<{ success: boolean }>(`/api/admin/inquiries/${id}`, { status }),
+    getStats:        ()                              => get<Stats>("/api/admin/stats", true),
   },
 
   inquiries: {
@@ -135,11 +159,18 @@ export const api = {
       desired_move_in_date?: string;
       number_of_occupants?: string;
       message?: string;
-    }) => post<{ id: number; status: string }>("/api/inquiries", data),
+    }) => post<{ success: boolean; id: number }>("/api/inquiries", data),
   },
 
-  // Auth helpers
-  saveToken: (token: string) => localStorage.setItem("erowho_token", token),
-  clearToken: () => localStorage.removeItem("erowho_token"),
-  hasToken: () => !!getToken(),
+  contact: (data: {
+    full_name: string;
+    email: string;
+    phone?: string;
+    inquiry_type?: string;
+    message?: string;
+  }) => post<{ success: boolean; id: number }>("/api/contact", data),
+
+  saveToken:  (token: string) => localStorage.setItem("erowho_token", token),
+  clearToken: ()              => localStorage.removeItem("erowho_token"),
+  hasToken:   ()              => !!getToken(),
 };

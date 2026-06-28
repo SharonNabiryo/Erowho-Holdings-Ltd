@@ -618,34 +618,44 @@ export function RentalsPage({
   initialFilters = {},
 }: {
   navigate: (p: string, data?: any) => void;
-  initialFilters?: { q?: string; country?: string; property_type?: string; bedrooms?: string; status?: string; max_rent?: string };
+  initialFilters?: PropertyFilters;
 }) {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState(initialFilters.q || "");
   const [country, setCountry] = useState(initialFilters.country || "");
+  const [city, setCity]       = useState(initialFilters.city || "");
   const [propType, setPropType] = useState(initialFilters.property_type || "");
-  const [beds, setBeds] = useState(initialFilters.bedrooms || "");
-  const [status, setStatus] = useState(initialFilters.status || "");
+  const [beds, setBeds]       = useState(initialFilters.bedrooms || "");
+  const [baths, setBaths]     = useState(initialFilters.bathrooms || "");
+  const [status, setStatus]   = useState(initialFilters.status || "");
+  const [minRent, setMinRent] = useState(initialFilters.min_rent || "");
   const [maxRent, setMaxRent] = useState(initialFilters.max_rent || "");
 
   useEffect(() => {
     setLoading(true);
+    setError("");
     const f: PropertyFilters = {};
-    if (search) f.q = search;
-    if (country) f.country = country;
+    if (search)   f.q             = search;
+    if (country)  f.country       = country;
+    if (city)     f.city          = city;
     if (propType) f.property_type = propType;
-    if (beds) f.bedrooms = beds;
-    if (status) f.status = status;
-    if (maxRent) f.max_rent = maxRent;
+    if (beds)     f.bedrooms      = beds;
+    if (baths)    f.bathrooms     = baths;
+    if (status)   f.status        = status;
+    if (minRent)  f.min_rent      = minRent;
+    if (maxRent)  f.max_rent      = maxRent;
     api.properties.list(f)
       .then(ps => { setProperties(ps); setLoading(false); })
-      .catch(e => { setError(e.message); setLoading(false); });
-  }, [search, country, propType, beds, status, maxRent]);
+      .catch(() => { setError("Something went wrong while loading rentals. Please try again."); setLoading(false); });
+  }, [search, country, city, propType, beds, baths, status, minRent, maxRent]);
 
-  const clear = () => { setSearch(""); setCountry(""); setPropType(""); setBeds(""); setStatus(""); setMaxRent(""); };
-  const hasFilters = !!(search || country || propType || beds || status || maxRent);
+  const clear = () => {
+    setSearch(""); setCountry(""); setCity(""); setPropType("");
+    setBeds(""); setBaths(""); setStatus(""); setMinRent(""); setMaxRent("");
+  };
+  const hasFilters = !!(search || country || city || propType || beds || baths || status || minRent || maxRent);
 
   const FLabel = ({ children }: { children: React.ReactNode }) => (
     <label style={{ fontSize: 10, color: C.subtle, letterSpacing: "0.12em", display: "block", marginBottom: 5, fontWeight: 600 }}>
@@ -672,56 +682,81 @@ export function RentalsPage({
       </section>
 
       {/* Filters bar */}
-      <div style={{ background: "#FFF", borderBottom: `1px solid ${C.stone}`, padding: "20px 28px", boxShadow: "0 2px 12px rgba(42,33,27,0.06)" }}>
-        <div style={{ maxWidth: 1240, margin: "0 auto" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr 1fr auto", gap: 10, alignItems: "end" }}>
+      <div style={{ background: "#FFF", borderBottom: `1px solid ${C.stone}`, padding: "18px 28px 20px", boxShadow: "0 2px 12px rgba(42,33,27,0.06)" }}>
+        <div style={{ maxWidth: 1240, margin: "0 auto", display: "flex", flexDirection: "column", gap: 10 }}>
+          {/* Row 1: Search + location */}
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: 10, alignItems: "end" }}>
             <div>
               <FLabel>SEARCH</FLabel>
               <div style={{ position: "relative" }}>
-                <i className="fas fa-magnifying-glass" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: C.clay, fontSize: 12 }} />
-                <input className="inp" value={search} onChange={e => setSearch(e.target.value)} placeholder="City, country, or property name" style={{ paddingLeft: 32 }} />
+                <i className="fas fa-magnifying-glass" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: C.clay, fontSize: 12, pointerEvents: "none" }} />
+                <input className="inp" value={search} onChange={e => setSearch(e.target.value)} placeholder="Property name or keyword" style={{ paddingLeft: 32 }} aria-label="Search properties" />
               </div>
             </div>
             <div>
               <FLabel>COUNTRY</FLabel>
-              <select className="inp" value={country} onChange={e => setCountry(e.target.value)} style={{ cursor: "pointer" }}>
+              <select className="inp" value={country} onChange={e => setCountry(e.target.value)} style={{ cursor: "pointer" }} aria-label="Filter by country">
                 <option value="">All Countries</option>
                 <option>Canada</option>
                 <option>United States</option>
               </select>
             </div>
             <div>
+              <FLabel>CITY</FLabel>
+              <div style={{ position: "relative" }}>
+                <i className="fas fa-location-dot" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: C.clay, fontSize: 12, pointerEvents: "none" }} />
+                <input className="inp" value={city} onChange={e => setCity(e.target.value)} placeholder="e.g. Toronto" style={{ paddingLeft: 30 }} aria-label="Filter by city" />
+              </div>
+            </div>
+            <div>
               <FLabel>TYPE</FLabel>
-              <select className="inp" value={propType} onChange={e => setPropType(e.target.value)} style={{ cursor: "pointer" }}>
+              <select className="inp" value={propType} onChange={e => setPropType(e.target.value)} style={{ cursor: "pointer" }} aria-label="Filter by property type">
                 <option value="">All Types</option>
                 {["Single-Family Home","Townhome","Duplex","Apartment","Condo","Multifamily"].map(t => <option key={t}>{t}</option>)}
               </select>
             </div>
+          </div>
+          {/* Row 2: Detail filters + clear */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr auto", gap: 10, alignItems: "end" }}>
             <div>
               <FLabel>MIN BEDS</FLabel>
-              <select className="inp" value={beds} onChange={e => setBeds(e.target.value)} style={{ cursor: "pointer" }}>
+              <select className="inp" value={beds} onChange={e => setBeds(e.target.value)} style={{ cursor: "pointer" }} aria-label="Minimum bedrooms">
                 <option value="">Any</option>
                 {[1,2,3,4].map(n => <option key={n} value={n}>{n}+</option>)}
               </select>
             </div>
             <div>
+              <FLabel>MIN BATHS</FLabel>
+              <select className="inp" value={baths} onChange={e => setBaths(e.target.value)} style={{ cursor: "pointer" }} aria-label="Minimum bathrooms">
+                <option value="">Any</option>
+                {[1,2,3].map(n => <option key={n} value={n}>{n}+</option>)}
+              </select>
+            </div>
+            <div>
               <FLabel>STATUS</FLabel>
-              <select className="inp" value={status} onChange={e => setStatus(e.target.value)} style={{ cursor: "pointer" }}>
+              <select className="inp" value={status} onChange={e => setStatus(e.target.value)} style={{ cursor: "pointer" }} aria-label="Availability status">
                 <option value="">All</option>
                 {["Available","Coming Soon","Rented","Under Review"].map(s => <option key={s}>{s}</option>)}
               </select>
             </div>
             <div>
+              <FLabel>MIN RENT ($)</FLabel>
+              <input className="inp" type="number" min="0" value={minRent} onChange={e => setMinRent(e.target.value)} placeholder="No min" aria-label="Minimum monthly rent" />
+            </div>
+            <div>
               <FLabel>MAX RENT ($)</FLabel>
-              <input className="inp" type="number" value={maxRent} onChange={e => setMaxRent(e.target.value)} placeholder="No limit" />
+              <input className="inp" type="number" min="0" value={maxRent} onChange={e => setMaxRent(e.target.value)} placeholder="No max" aria-label="Maximum monthly rent" />
             </div>
             <button
               onClick={clear}
               disabled={!hasFilters}
+              aria-label="Clear all filters"
               style={{
-                background: "none", border: `1px solid ${C.stone}`, color: hasFilters ? C.muted : C.subtle,
-                padding: "10px 14px", borderRadius: 8, fontSize: 12, cursor: hasFilters ? "pointer" : "default",
-                marginTop: 17, whiteSpace: "nowrap", transition: "border-color 0.2s",
+                background: "none", border: `1px solid ${hasFilters ? C.clay : C.stone}`,
+                color: hasFilters ? C.muted : C.subtle,
+                padding: "10px 14px", borderRadius: 8, fontSize: 12,
+                cursor: hasFilters ? "pointer" : "default",
+                whiteSpace: "nowrap", transition: "border-color 0.2s",
               }}>
               <i className="fas fa-xmark" style={{ marginRight: 5 }} />
               Clear
@@ -752,11 +787,19 @@ export function RentalsPage({
               {properties.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "80px 0" }}>
                   <i className="fas fa-house-circle-xmark" style={{ fontSize: 48, color: C.stone, display: "block", marginBottom: 20 }} />
-                  <p style={{ fontFamily: F.serif, fontSize: 24, color: C.text, marginBottom: 12 }}>No properties match your search</p>
-                  <p style={{ fontSize: 14, color: C.muted, marginBottom: 26 }}>Try adjusting or clearing your filters.</p>
-                  <button className="btn-primary" onClick={clear} style={{ padding: "11px 28px" }}>
-                    Clear All Filters
-                  </button>
+                  <p style={{ fontFamily: F.serif, fontSize: 24, color: C.text, marginBottom: 12 }}>No rentals match your search</p>
+                  <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.75, maxWidth: 440, margin: "0 auto 26px" }}>
+                    Adjust your filters or{" "}
+                    <button onClick={() => navigate("Contact")} style={{ background: "none", border: "none", color: C.gold, cursor: "pointer", fontSize: 14, padding: 0, textDecoration: "underline" }}>
+                      submit a rental inquiry
+                    </button>
+                    {" "}and we'll contact you when a suitable property becomes available.
+                  </p>
+                  {hasFilters && (
+                    <button className="btn-primary" onClick={clear} style={{ padding: "11px 28px" }}>
+                      Clear All Filters
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 24 }}>
@@ -800,18 +843,25 @@ export function PropertyDetailPage({ property, navigate }: { property: Property 
   const mainImg  = property.image_url || fallback;
   const gallery  = [mainImg, ...(property.gallery_images || []).filter(Boolean)];
 
+  const emailOk = (e: string) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e.trim());
+
   const submit = async () => {
-    if (!form.name || !form.email) { setError("Name and email are required."); return; }
+    setError("");
+    if (!form.name.trim()) { setError("Please enter your full name."); return; }
+    if (!form.email.trim()) { setError("Please enter your email address."); return; }
+    if (!emailOk(form.email)) { setError("Please enter a valid email address."); return; }
     setSubmitting(true);
     try {
       await api.inquiries.create({
         property_id: property.id, property_title: property.title,
-        full_name: form.name, email: form.email, phone: form.phone,
-        desired_move_in_date: form.moveIn, number_of_occupants: form.occupants, message: form.message,
+        full_name: form.name.trim(), email: form.email.trim(), phone: form.phone.trim(),
+        desired_move_in_date: form.moveIn, number_of_occupants: form.occupants,
+        message: form.message.trim(),
       });
       setDone(true);
-    } catch (e: any) { setError(e.message); }
-    finally { setSubmitting(false); }
+    } catch (e: any) {
+      setError(e.message || "Something went wrong. Please try again.");
+    } finally { setSubmitting(false); }
   };
 
   const amenityIcon = (a: string) => {
@@ -1235,14 +1285,27 @@ export function ContactPage() {
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
 
+  const emailOk = (e: string) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e.trim());
+
   const submit = async () => {
-    if (!form.name || !form.email) { setError("Name and email are required."); return; }
+    setError("");
+    if (!form.name.trim()) { setError("Please enter your full name."); return; }
+    if (!form.email.trim()) { setError("Please enter your email address."); return; }
+    if (!emailOk(form.email)) { setError("Please enter a valid email address."); return; }
+    if (!form.message.trim()) { setError("Please enter a message."); return; }
     setSubmitting(true);
     try {
-      await api.inquiries.create({ full_name: form.name, email: form.email, phone: form.phone, message: `[${form.type || "General"}] ${form.message}` });
+      await api.contact({
+        full_name: form.name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim() || undefined,
+        inquiry_type: form.type || undefined,
+        message: form.message.trim(),
+      });
       setDone(true);
-    } catch (e: any) { setError(e.message); }
-    finally { setSubmitting(false); }
+    } catch (e: any) {
+      setError(e.message || "Something went wrong. Please try again.");
+    } finally { setSubmitting(false); }
   };
 
   return (
