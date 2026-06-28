@@ -197,7 +197,7 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 52 }}>
             <div>
               <Label>Current Listings</Label>
-              <h2 style={{ fontFamily: F.serif, fontSize: 44, fontWeight: 300, color: C.text, lineHeight: 1.1 }}>
+              <h2 style={{ fontFamily: F.serif, fontSize: 44, fontWeight: 400, color: C.heading, lineHeight: 1.1 }}>
                 Available Rentals
               </h2>
               <p style={{ color: C.muted, marginTop: 10, fontSize: 15 }}>
@@ -235,7 +235,7 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
         <div style={{ maxWidth: 1240, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "center" }}>
           <div>
             <Label>Rental Match Preview</Label>
-            <h2 style={{ fontFamily: F.serif, fontSize: 44, fontWeight: 300, color: C.text, lineHeight: 1.15, marginBottom: 22 }}>
+            <h2 style={{ fontFamily: F.serif, fontSize: 44, fontWeight: 400, color: C.heading, lineHeight: 1.15, marginBottom: 22 }}>
               Homes Ready for Long-Term Renters
             </h2>
             <p style={{ color: C.muted, lineHeight: 1.85, fontSize: 15, marginBottom: 32 }}>
@@ -381,11 +381,11 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
       </section>
 
       {/* ── Portfolio Growth Vision ── */}
-      <section style={{ background: C.sand, padding: "96px 28px" }}>
+      <section style={{ background: C.cream, padding: "96px 28px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 64 }}>
             <Label>Strategic Roadmap</Label>
-            <h2 style={{ fontFamily: F.serif, fontSize: 46, fontWeight: 300, color: C.text, marginBottom: 14 }}>
+            <h2 style={{ fontFamily: F.serif, fontSize: 46, fontWeight: 400, color: C.heading, marginBottom: 14 }}>
               Portfolio Growth Vision
             </h2>
             <p style={{ color: C.muted, maxWidth: 480, margin: "0 auto", lineHeight: 1.78, fontSize: 15 }}>
@@ -437,7 +437,7 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
         <div style={{ maxWidth: 880, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 52 }}>
             <Label>Acquisition Criteria</Label>
-            <h2 style={{ fontFamily: F.serif, fontSize: 44, fontWeight: 300, color: C.text, marginBottom: 14 }}>
+            <h2 style={{ fontFamily: F.serif, fontSize: 44, fontWeight: 400, color: C.heading, marginBottom: 14 }}>
               Property Review Lens
             </h2>
             <p style={{ color: C.muted, lineHeight: 1.78, fontSize: 15, maxWidth: 500, margin: "0 auto" }}>
@@ -548,7 +548,7 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
         <div style={{ maxWidth: 1240, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
             <Label>What Guides Us</Label>
-            <h2 style={{ fontFamily: F.serif, fontSize: 46, fontWeight: 300, color: C.text }}>Our Principles</h2>
+            <h2 style={{ fontFamily: F.serif, fontSize: 46, fontWeight: 400, color: C.heading }}>Our Principles</h2>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
             {principles.map((p, i) => (
@@ -929,7 +929,7 @@ export function PropertyDetailPage({ property, navigate }: { property: Property 
             {/* Property info card */}
             <div style={{ background: "#FFF", border: `1px solid ${C.stone}`, borderRadius: 16, padding: "30px 28px" }}>
               <div style={{ marginBottom: 6 }}>
-                <h1 style={{ fontFamily: F.serif, fontSize: 36, fontWeight: 400, color: C.text, lineHeight: 1.15, marginBottom: 8 }}>
+                <h1 style={{ fontFamily: F.serif, fontSize: 36, fontWeight: 400, color: C.heading, lineHeight: 1.15, marginBottom: 8 }}>
                   {property.title}
                 </h1>
                 <p style={{ color: C.muted, fontSize: 14, display: "flex", alignItems: "center", gap: 6 }}>
@@ -965,12 +965,12 @@ export function PropertyDetailPage({ property, navigate }: { property: Property 
                 ))}
               </div>
 
-              <h3 style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 400, color: C.text, marginBottom: 12 }}>Description</h3>
+              <h3 style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 400, color: C.heading, marginBottom: 12 }}>Description</h3>
               <p style={{ color: C.muted, lineHeight: 1.85, marginBottom: 28, fontSize: 15 }}>{property.description}</p>
 
               {property.amenities.length > 0 && (
                 <>
-                  <h3 style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 400, color: C.text, marginBottom: 14 }}>Amenities</h3>
+                  <h3 style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 400, color: C.heading, marginBottom: 14 }}>Amenities</h3>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 10 }}>
                     {property.amenities.map(a => (
                       <div key={a} style={{
@@ -1131,7 +1131,7 @@ export function AboutPage() {
                 }}>
                   <i className={`fas ${icon}`} style={{ color: C.gold, fontSize: 16 }} />
                 </div>
-                <h2 style={{ fontFamily: F.serif, fontSize: 30, fontWeight: 300, color: C.text }}>{title}</h2>
+                <h2 style={{ fontFamily: F.serif, fontSize: 30, fontWeight: 400, color: C.heading }}>{title}</h2>
               </div>
               {copy.split("\n\n").map((p, i) => (
                 <p key={i} style={{ color: C.muted, lineHeight: 1.88, fontSize: 15.5, marginBottom: 12 }}>{p}</p>
@@ -1180,7 +1180,7 @@ export function PortfolioPage() {
                     </div>
                   </div>
                   <div style={{ padding: "18px 20px" }}>
-                    <h3 style={{ fontFamily: F.serif, fontSize: 19, fontWeight: 500, color: C.text, marginBottom: 6 }}>{p.title}</h3>
+                    <h3 style={{ fontFamily: F.serif, fontSize: 19, fontWeight: 500, color: C.heading, marginBottom: 6 }}>{p.title}</h3>
                     <p style={{ fontSize: 13, color: C.muted, marginBottom: 12, display: "flex", alignItems: "center", gap: 5 }}>
                       <i className="fas fa-location-dot" style={{ color: C.clay, fontSize: 11 }} />
                       {p.city}, {p.country}
@@ -1267,7 +1267,7 @@ export function ProcessPage() {
                 }}>{n}</span>
               </div>
               <div>
-                <h2 style={{ fontFamily: F.serif, fontSize: 26, fontWeight: 300, color: C.text, marginBottom: 10 }}>{title}</h2>
+                <h2 style={{ fontFamily: F.serif, fontSize: 26, fontWeight: 400, color: C.heading, marginBottom: 10 }}>{title}</h2>
                 <p style={{ color: C.muted, lineHeight: 1.88, fontSize: 15 }}>{desc}</p>
               </div>
             </div>
@@ -1336,14 +1336,14 @@ export function ContactPage() {
               }}>
                 <i className="fas fa-check" style={{ color: C.gold, fontSize: 22 }} />
               </div>
-              <h2 style={{ fontFamily: F.serif, fontSize: 30, color: C.text, marginBottom: 14 }}>Message Received</h2>
+              <h2 style={{ fontFamily: F.serif, fontSize: 30, fontWeight: 400, color: C.heading, marginBottom: 14 }}>Message Received</h2>
               <p style={{ color: C.muted, lineHeight: 1.78, fontSize: 15 }}>
                 Thank you for reaching out to Erowho Holdings Limited. We will review your inquiry and respond accordingly.
               </p>
             </div>
           ) : (
             <div style={{ background: "#FFF", border: `1px solid ${C.stone}`, borderRadius: 16, padding: "36px 32px", boxShadow: "0 4px 24px rgba(42,33,27,0.07)" }}>
-              <h2 style={{ fontFamily: F.serif, fontSize: 26, fontWeight: 300, color: C.text, marginBottom: 22 }}>Send a Message</h2>
+              <h2 style={{ fontFamily: F.serif, fontSize: 26, fontWeight: 400, color: C.heading, marginBottom: 22 }}>Send a Message</h2>
               {error && <div style={{ marginBottom: 16 }}><ErrorMsg msg={error} /></div>}
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 <input className="inp" placeholder="Full name *" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />

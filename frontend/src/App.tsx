@@ -40,7 +40,7 @@ function NotFoundPage({ navigate }: { navigate: (p: string) => void }) {
       background: C.ivory,
     }}>
       <i className="fas fa-house-chimney" style={{ fontSize: 52, color: C.stone, marginBottom: 28 }} />
-      <h1 style={{ fontFamily: F.serif, fontSize: 42, fontWeight: 300, color: C.text, marginBottom: 14 }}>
+      <h1 style={{ fontFamily: F.serif, fontSize: 42, fontWeight: 400, color: C.heading, marginBottom: 14 }}>
         Page Not Found
       </h1>
       <p style={{ fontSize: 16, color: C.muted, lineHeight: 1.75, maxWidth: 420, marginBottom: 36 }}>

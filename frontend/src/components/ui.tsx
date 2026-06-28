@@ -67,7 +67,7 @@ export function PropertyCard({ prop, onClick }: { prop: Property; onClick: (p: P
       <div style={{ padding: "20px 22px 22px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
           <h3 style={{
-            fontFamily: F.serif, fontSize: 20, fontWeight: 500, color: C.text,
+            fontFamily: F.serif, fontSize: 20, fontWeight: 500, color: C.heading,
             lineHeight: 1.2, flex: 1, marginRight: 10,
           }}>
             {prop.title}

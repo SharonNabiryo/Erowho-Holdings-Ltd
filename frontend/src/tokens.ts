@@ -19,8 +19,9 @@ export const C = {
   olive:      "#6F7564",  // Olive Gray — secondary text
 
   // Text
+  heading:    "#1C1208",  // Near-black espresso — main headings, strong contrast
   text:       "#2A211B",  // Deep Espresso — body text on light bg
-  muted:      "#7A6A5C",  // warm muted text
+  muted:      "#6A5A4C",  // warm muted text (slightly deeper for readability)
   subtle:     "#A09080",  // subtle/placeholder text
 
   // Legacy aliases (keeps older references working)
@@ -31,13 +32,13 @@ export const C = {
   taupe:      "#B89B7B",
   slate:      "#6F7564",
   bronze:     "#B66E4F",
-  bodyDark:   "#7A6A5C",
+  bodyDark:   "#6A5A4C",
   lBg:        "#F7F1E8",
   lSurface:   "#FAF6F0",
   lCard:      "#FFFFFF",
   lBorder:    "#D7C7B5",
   lText:      "#2A211B",
-  lMuted:     "#7A6A5C",
+  lMuted:     "#6A5A4C",
   lSubtle:    "#A09080",
 };
 
@@ -83,21 +84,21 @@ export const GLOBAL_CSS = `
     transition: background 0.2s, transform 0.12s, box-shadow 0.2s;
     border-radius: 8px;
   }
-  .btn-primary:hover { background: #B89B7B; box-shadow: 0 4px 16px rgba(200,168,107,0.3); }
-  .btn-primary:active { transform: scale(0.98); }
+  .btn-primary:hover { background: #B8902E; box-shadow: 0 6px 22px rgba(184,144,46,0.38); transform: translateY(-1px); }
+  .btn-primary:active { transform: scale(0.98) translateY(0); }
   .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
   /* keep old class names working */
-  .btn-brass { background: #C8A86B; color: #2A211B; border: none; cursor: pointer; font-weight: 500; transition: background 0.2s, transform 0.12s; border-radius: 8px; }
-  .btn-brass:hover { background: #B89B7B; }
-  .btn-brass:active { transform: scale(0.98); }
+  .btn-brass { background: #C8A86B; color: #2A211B; border: none; cursor: pointer; font-weight: 500; transition: background 0.2s, transform 0.15s, box-shadow 0.2s; border-radius: 8px; }
+  .btn-brass:hover { background: #B8902E; box-shadow: 0 6px 22px rgba(184,144,46,0.38); transform: translateY(-1px); }
+  .btn-brass:active { transform: scale(0.98) translateY(0); }
   .btn-brass:disabled { opacity: 0.5; cursor: not-allowed; }
 
   .btn-outline {
     background: transparent; border: 1.5px solid #D7C7B5; color: #2A211B; cursor: pointer;
-    font-size: 14px; transition: border-color 0.2s, background 0.2s; border-radius: 8px;
+    font-size: 14px; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; border-radius: 8px;
   }
-  .btn-outline:hover { border-color: #C8A86B; background: rgba(200,168,107,0.06); }
+  .btn-outline:hover { border-color: #C8A86B; background: rgba(200,168,107,0.07); box-shadow: 0 3px 12px rgba(200,168,107,0.14); }
 
   .btn-outline-dark {
     background: transparent; border: 1.5px solid rgba(215,199,181,0.3); color: #FAF6F0; cursor: pointer;
@@ -130,7 +131,7 @@ export const GLOBAL_CSS = `
     overflow: hidden; cursor: pointer;
     transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
   }
-  .pcard:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(42,33,27,0.14); border-color: #C8A86B; }
+  .pcard:hover { transform: translateY(-6px); box-shadow: 0 22px 56px rgba(42,33,27,0.18); border-color: #C8A86B; }
   .pcard:hover .pcard-img img { transform: scale(1.05); }
   .pcard-img img { transition: transform 0.5s ease; }
 
