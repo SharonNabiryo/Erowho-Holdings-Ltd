@@ -73,8 +73,8 @@ export const HERO_IMAGE = "https://images.unsplash.com/photo-1730629651658-c730d
 // ── Global CSS ────────────────────────────────────────────────────────────────
 export const GLOBAL_CSS = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body { background: #F7F1E8; color: #2A211B; font-family: 'DM Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  html { scroll-behavior: smooth; overflow-x: hidden; }
+  body { background: #F7F1E8; color: #2A211B; font-family: 'DM Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
   input, select, textarea, button { font-family: 'DM Sans', system-ui, sans-serif; }
 
   /* ── Buttons ── */
@@ -192,5 +192,37 @@ export const GLOBAL_CSS = `
   .prop-grid { display: grid; gap: 26px; }
   @media (max-width: 640px) {
     .prop-grid { grid-template-columns: 1fr !important; }
+  }
+
+  /* ── Responsive grid system (grid-template-columns only — keep gap/align in inline style) ── */
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; }
+  .g3 { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .g-detail { display: grid; grid-template-columns: 1fr 380px; }
+  .g-f1 { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; }
+  .g-f2 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto; }
+  @media (max-width: 768px) {
+    .g2 { grid-template-columns: 1fr; }
+    .g3 { grid-template-columns: 1fr; }
+    .g-f1 { grid-template-columns: 1fr 1fr; }
+    .g-f2 { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 420px) {
+    .g-f1 { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 900px) {
+    .g-detail { grid-template-columns: 1fr; }
+    .g-detail-sidebar { position: static !important; }
+  }
+
+  /* ── Section header row (heading + action button) ── */
+  .sect-hdr { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 52px; gap: 16px; }
+  @media (max-width: 640px) {
+    .sect-hdr { flex-direction: column; align-items: flex-start; margin-bottom: 32px; }
+  }
+
+  /* ── Form card ── */
+  .form-card { padding: 36px 32px; }
+  @media (max-width: 480px) {
+    .form-card { padding: 24px 18px; }
   }
 `;

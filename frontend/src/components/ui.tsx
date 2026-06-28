@@ -77,7 +77,7 @@ export function PropertyCard({ prop, onClick }: { prop: Property; onClick: (p: P
           <i className="fas fa-location-dot" style={{ color: C.clay, fontSize: 11 }} />
           {prop.city}, {prop.country}
         </p>
-        <div style={{ display: "flex", gap: 18, marginBottom: 14 }}>
+        <div style={{ display: "flex", gap: 18, marginBottom: 14, flexWrap: "wrap" }}>
           <span style={{ fontSize: 13, color: C.muted, display: "flex", alignItems: "center", gap: 5 }}>
             <i className="fas fa-bed" style={{ color: C.clay, fontSize: 11 }} />
             {prop.bedrooms} {prop.bedrooms === 1 ? "bed" : "beds"}

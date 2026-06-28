@@ -4,6 +4,19 @@ import { api, Property, PropertyFilters } from "../api";
 import { StatusBadge, PropertyCard, PageLoader, ErrorMsg, Spinner } from "../components/ui";
 import { PropImage } from "../illustrations";
 
+// ── Responsive helper ─────────────────────────────────────────────────────────
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth < breakpoint : false
+  );
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < breakpoint);
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [breakpoint]);
+  return isMobile;
+}
+
 // ── Shared section label ───────────────────────────────────────────────────────
 function Label({ children, light = false }: { children: React.ReactNode; light?: boolean }) {
   return (
@@ -23,6 +36,7 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
   const [loading, setLoading] = useState(true);
   const [heroSearch, setHeroSearch] = useState({ location: "", beds: "", maxRent: "" });
   const [activePhase, setActivePhase] = useState<number | null>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     api.properties.list().then(ps => {
@@ -194,10 +208,10 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
       {/* ── Featured Rentals ── */}
       <section style={{ background: C.ivory, padding: "92px 28px" }}>
         <div style={{ maxWidth: 1240, margin: "0 auto" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 52 }}>
+          <div className="sect-hdr">
             <div>
               <Label>Current Listings</Label>
-              <h2 style={{ fontFamily: F.serif, fontSize: 44, fontWeight: 400, color: C.heading, lineHeight: 1.1 }}>
+              <h2 style={{ fontFamily: F.serif, fontSize: "clamp(28px, 7vw, 44px)", fontWeight: 400, color: C.heading, lineHeight: 1.1 }}>
                 Available Rentals
               </h2>
               <p style={{ color: C.muted, marginTop: 10, fontSize: 15 }}>
@@ -215,7 +229,7 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
               <p style={{ color: C.muted }}>No rentals available at the moment. Check back soon.</p>
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 24 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(320px, 100%), 1fr))", gap: 24 }}>
               {featured.map(p => (
                 <PropertyCard key={p.id} prop={p} onClick={prop => navigate("PropertyDetail", prop)} />
               ))}
@@ -232,10 +246,10 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
 
       {/* ── Rental Match Preview ── */}
       <section style={{ background: C.sand, padding: "96px 28px" }}>
-        <div style={{ maxWidth: 1240, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "center" }}>
+        <div className="g2" style={{ maxWidth: 1240, margin: "0 auto", gap: 72, alignItems: "center" }}>
           <div>
             <Label>Rental Match Preview</Label>
-            <h2 style={{ fontFamily: F.serif, fontSize: 44, fontWeight: 400, color: C.heading, lineHeight: 1.15, marginBottom: 22 }}>
+            <h2 style={{ fontFamily: F.serif, fontSize: "clamp(28px, 7vw, 44px)", fontWeight: 400, color: C.heading, lineHeight: 1.15, marginBottom: 22 }}>
               Homes Ready for Long-Term Renters
             </h2>
             <p style={{ color: C.muted, lineHeight: 1.85, fontSize: 15, marginBottom: 32 }}>
@@ -325,11 +339,11 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
           background: "radial-gradient(circle, rgba(200,168,107,0.06) 0%, transparent 70%)",
           pointerEvents: "none",
         }} />
-        <div style={{ maxWidth: 1240, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "center", position: "relative", zIndex: 1 }}>
+        <div className="g2" style={{ maxWidth: 1240, margin: "0 auto", gap: 80, alignItems: "center", position: "relative", zIndex: 1 }}>
           <div>
             <Label light>Who We Are</Label>
             <h2 style={{
-              fontFamily: F.serif, fontSize: 42, fontWeight: 300,
+              fontFamily: F.serif, fontSize: "clamp(26px, 6.5vw, 42px)", fontWeight: 300,
               color: "#FAF6F0", lineHeight: 1.18, marginBottom: 22,
             }}>
               A Holding Company Built Around Long-Term Rental Ownership
@@ -351,7 +365,7 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
             </button>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div className="g2" style={{ gap: 16 }}>
             {[
               { icon: "fa-magnifying-glass", title: "Acquire", desc: "We identify and acquire rental properties in selected markets guided by long-term fundamentals." },
               { icon: "fa-building", title: "Own", desc: "We hold rental assets for the long term, focusing on stability and responsible stewardship." },
@@ -385,50 +399,76 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 64 }}>
             <Label>Strategic Roadmap</Label>
-            <h2 style={{ fontFamily: F.serif, fontSize: 46, fontWeight: 400, color: C.heading, marginBottom: 14 }}>
+            <h2 style={{ fontFamily: F.serif, fontSize: "clamp(28px, 7.5vw, 46px)", fontWeight: 400, color: C.heading, marginBottom: 14 }}>
               Portfolio Growth Vision
             </h2>
             <p style={{ color: C.muted, maxWidth: 480, margin: "0 auto", lineHeight: 1.78, fontSize: 15 }}>
               Acquire thoughtfully, stabilize responsibly, improve where needed, and grow with discipline.
             </p>
           </div>
-          <div style={{ display: "flex", position: "relative", alignItems: "flex-start" }}>
-            <div style={{
-              position: "absolute", top: 28, left: "9%", right: "9%",
-              height: 1, background: C.stone,
-            }} />
-            {phases.map((p, i) => (
-              <div key={i} onClick={() => setActivePhase(activePhase === i ? null : i)}
-                style={{ flex: 1, textAlign: "center", cursor: "pointer", padding: "0 8px", position: "relative" }}>
-                <div style={{
-                  width: 56, height: 56, borderRadius: "50%",
-                  background: activePhase === i ? C.gold : "#FFF",
-                  border: `2px solid ${activePhase === i ? C.gold : C.stone}`,
-                  margin: "0 auto 18px", display: "flex", alignItems: "center", justifyContent: "center",
-                  transition: "all 0.28s", position: "relative", zIndex: 1,
-                  boxShadow: activePhase === i ? "0 6px 20px rgba(200,168,107,0.35)" : "none",
+          {isMobile ? (
+            <div>
+              {phases.map((p, i) => (
+                <div key={i} style={{
+                  display: "flex", gap: 16, alignItems: "flex-start",
+                  padding: "18px 0",
+                  borderBottom: i < phases.length - 1 ? `1px solid ${C.stone}` : "none",
                 }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 11, color: activePhase === i ? C.espresso : C.muted }}>{p.n}</span>
+                  <div style={{
+                    width: 48, height: 48, borderRadius: "50%", flexShrink: 0,
+                    background: "#FFF", border: `2px solid ${C.stone}`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <span style={{ fontFamily: F.mono, fontSize: 11, color: C.muted }}>{p.n}</span>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ fontFamily: F.serif, fontSize: 15, color: C.espresso, marginBottom: 6 }}>{p.title}</h4>
+                    <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.65 }}>{p.desc}</p>
+                  </div>
                 </div>
-                <h4 style={{
-                  fontFamily: F.serif, fontSize: 14.5,
-                  color: activePhase === i ? C.espresso : C.muted,
-                  transition: "color 0.28s", lineHeight: 1.3, marginBottom: 8,
-                }}>{p.title}</h4>
+              ))}
+            </div>
+          ) : (
+            <>
+              <div style={{ display: "flex", position: "relative", alignItems: "flex-start" }}>
                 <div style={{
-                  overflow: "hidden",
-                  maxHeight: activePhase === i ? 120 : 0,
-                  opacity: activePhase === i ? 1 : 0,
-                  transition: "max-height 0.4s, opacity 0.3s",
-                }}>
-                  <p style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.68, marginTop: 4 }}>{p.desc}</p>
-                </div>
+                  position: "absolute", top: 28, left: "9%", right: "9%",
+                  height: 1, background: C.stone,
+                }} />
+                {phases.map((p, i) => (
+                  <div key={i} onClick={() => setActivePhase(activePhase === i ? null : i)}
+                    style={{ flex: 1, textAlign: "center", cursor: "pointer", padding: "0 8px", position: "relative" }}>
+                    <div style={{
+                      width: 56, height: 56, borderRadius: "50%",
+                      background: activePhase === i ? C.gold : "#FFF",
+                      border: `2px solid ${activePhase === i ? C.gold : C.stone}`,
+                      margin: "0 auto 18px", display: "flex", alignItems: "center", justifyContent: "center",
+                      transition: "all 0.28s", position: "relative", zIndex: 1,
+                      boxShadow: activePhase === i ? "0 6px 20px rgba(200,168,107,0.35)" : "none",
+                    }}>
+                      <span style={{ fontFamily: F.mono, fontSize: 11, color: activePhase === i ? C.espresso : C.muted }}>{p.n}</span>
+                    </div>
+                    <h4 style={{
+                      fontFamily: F.serif, fontSize: 14.5,
+                      color: activePhase === i ? C.espresso : C.muted,
+                      transition: "color 0.28s", lineHeight: 1.3, marginBottom: 8,
+                    }}>{p.title}</h4>
+                    <div style={{
+                      overflow: "hidden",
+                      maxHeight: activePhase === i ? 120 : 0,
+                      opacity: activePhase === i ? 1 : 0,
+                      transition: "max-height 0.4s, opacity 0.3s",
+                    }}>
+                      <p style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.68, marginTop: 4 }}>{p.desc}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <p style={{ textAlign: "center", fontSize: 10, color: C.subtle, marginTop: 36, letterSpacing: "0.12em" }}>
-            CLICK EACH PHASE TO EXPAND
-          </p>
+              <p style={{ textAlign: "center", fontSize: 10, color: C.subtle, marginTop: 36, letterSpacing: "0.12em" }}>
+                CLICK EACH PHASE TO EXPAND
+              </p>
+            </>
+          )}
         </div>
       </section>
 
@@ -437,7 +477,7 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
         <div style={{ maxWidth: 880, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 52 }}>
             <Label>Acquisition Criteria</Label>
-            <h2 style={{ fontFamily: F.serif, fontSize: 44, fontWeight: 400, color: C.heading, marginBottom: 14 }}>
+            <h2 style={{ fontFamily: F.serif, fontSize: "clamp(28px, 7vw, 44px)", fontWeight: 400, color: C.heading, marginBottom: 14 }}>
               Property Review Lens
             </h2>
             <p style={{ color: C.muted, lineHeight: 1.78, fontSize: 15, maxWidth: 500, margin: "0 auto" }}>
@@ -495,14 +535,14 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
         <div style={{ maxWidth: 1240, margin: "0 auto", position: "relative", zIndex: 1 }}>
           <div style={{ textAlign: "center", marginBottom: 64 }}>
             <Label light>Our Markets</Label>
-            <h2 style={{ fontFamily: F.serif, fontSize: 46, fontWeight: 300, color: "#FAF6F0", marginBottom: 14 }}>
+            <h2 style={{ fontFamily: F.serif, fontSize: "clamp(28px, 7.5vw, 46px)", fontWeight: 300, color: "#FAF6F0", marginBottom: 14 }}>
               Canada &amp; United States
             </h2>
             <p style={{ color: "rgba(215,199,181,0.65)", maxWidth: 500, margin: "0 auto", lineHeight: 1.78, fontSize: 15 }}>
               Erowho Holdings Limited builds a geographically diversified rental portfolio across two of North America's largest residential markets.
             </p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+          <div className="g2" style={{ gap: 24 }}>
             {[
               {
                 flag: "🇨🇦", country: "Canada",
@@ -548,9 +588,9 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
         <div style={{ maxWidth: 1240, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
             <Label>What Guides Us</Label>
-            <h2 style={{ fontFamily: F.serif, fontSize: 46, fontWeight: 400, color: C.heading }}>Our Principles</h2>
+            <h2 style={{ fontFamily: F.serif, fontSize: "clamp(28px, 7.5vw, 46px)", fontWeight: 400, color: C.heading }}>Our Principles</h2>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+          <div className="g3" style={{ gap: 24 }}>
             {principles.map((p, i) => (
               <div key={i} style={{
                 background: "#FFF", border: `1px solid ${C.stone}`,
@@ -581,7 +621,7 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
         background: `linear-gradient(135deg, ${C.charcoal} 0%, ${C.espresso} 100%)`,
         padding: "88px 28px",
       }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+        <div className="g2" style={{ maxWidth: 900, margin: "0 auto", gap: 20 }}>
           {[
             {
               tag: "FOR RENTERS", title: "Looking for a rental?",
@@ -672,7 +712,7 @@ export function RentalsPage({
       }}>
         <div style={{ maxWidth: 1240, margin: "0 auto" }}>
           <Label light>EROWHO HOLDINGS</Label>
-          <h1 style={{ fontFamily: F.serif, fontSize: 50, fontWeight: 300, color: "#FAF6F0", marginBottom: 10 }}>
+          <h1 style={{ fontFamily: F.serif, fontSize: "clamp(30px, 8vw, 50px)", fontWeight: 300, color: "#FAF6F0", marginBottom: 10 }}>
             Available Rentals
           </h1>
           <p style={{ color: "rgba(215,199,181,0.65)", fontSize: 15, maxWidth: 540 }}>
@@ -685,7 +725,7 @@ export function RentalsPage({
       <div style={{ background: "#FFF", borderBottom: `1px solid ${C.stone}`, padding: "18px 28px 20px", boxShadow: "0 2px 12px rgba(42,33,27,0.06)" }}>
         <div style={{ maxWidth: 1240, margin: "0 auto", display: "flex", flexDirection: "column", gap: 10 }}>
           {/* Row 1: Search + location */}
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: 10, alignItems: "end" }}>
+          <div className="g-f1" style={{ gap: 10, alignItems: "end" }}>
             <div>
               <FLabel>SEARCH</FLabel>
               <div style={{ position: "relative" }}>
@@ -717,7 +757,7 @@ export function RentalsPage({
             </div>
           </div>
           {/* Row 2: Detail filters + clear */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr auto", gap: 10, alignItems: "end" }}>
+          <div className="g-f2" style={{ gap: 10, alignItems: "end" }}>
             <div>
               <FLabel>MIN BEDS</FLabel>
               <select className="inp" value={beds} onChange={e => setBeds(e.target.value)} style={{ cursor: "pointer" }} aria-label="Minimum bedrooms">
@@ -802,7 +842,7 @@ export function RentalsPage({
                   )}
                 </div>
               ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 24 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(320px, 100%), 1fr))", gap: 24 }}>
                   {properties.map(p => (
                     <PropertyCard key={p.id} prop={p} onClick={prop => navigate("PropertyDetail", prop)} />
                   ))}
@@ -892,7 +932,7 @@ export function PropertyDetailPage({ property, navigate }: { property: Property 
           Back to Rentals
         </button>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 48, alignItems: "start" }}>
+        <div className="g-detail" style={{ gap: 48, alignItems: "start" }}>
           {/* Main content */}
           <div>
             {/* Image gallery */}
@@ -908,7 +948,7 @@ export function PropertyDetailPage({ property, navigate }: { property: Property 
               </div>
             </div>
             {gallery.length > 1 && (
-              <div style={{ display: "flex", gap: 8, marginBottom: 28 }}>
+              <div style={{ display: "flex", gap: 8, marginBottom: 28, flexWrap: "wrap" }}>
                 {gallery.map((img, i) => (
                   <div key={i} onClick={() => setActiveImg(i)} style={{
                     width: 72, height: 52, borderRadius: 8, overflow: "hidden", cursor: "pointer",
@@ -1003,8 +1043,8 @@ export function PropertyDetailPage({ property, navigate }: { property: Property 
             </div>
           </div>
 
-          {/* Inquiry form — sticky */}
-          <div style={{ position: "sticky", top: 88 }}>
+          {/* Inquiry form — sticky on desktop, static on mobile */}
+          <div className="g-detail-sidebar" style={{ position: "sticky", top: 88 }}>
             <div style={{ background: "#FFF", border: `1px solid ${C.stone}`, borderRadius: 16, padding: "26px 22px", boxShadow: "0 8px 32px rgba(42,33,27,0.10)" }}>
               {done ? (
                 <div style={{ textAlign: "center", padding: "24px 0" }}>
@@ -1102,7 +1142,7 @@ export function AboutPage() {
         }} />
         <div style={{ maxWidth: 800, margin: "0 auto", position: "relative", zIndex: 1 }}>
           <Label light>About</Label>
-          <h1 style={{ fontFamily: F.serif, fontSize: 52, fontWeight: 300, color: "#FAF6F0", lineHeight: 1.1, marginBottom: 22 }}>
+          <h1 style={{ fontFamily: F.serif, fontSize: "clamp(30px, 8vw, 52px)", fontWeight: 300, color: "#FAF6F0", lineHeight: 1.1, marginBottom: 22 }}>
             About Erowho Holdings Limited
           </h1>
           <div style={{
@@ -1160,7 +1200,7 @@ export function PortfolioPage() {
       }}>
         <div style={{ maxWidth: 1240, margin: "0 auto" }}>
           <Label light>EROWHO HOLDINGS</Label>
-          <h1 style={{ fontFamily: F.serif, fontSize: 50, fontWeight: 300, color: "#FAF6F0", marginBottom: 14 }}>Our Portfolio</h1>
+          <h1 style={{ fontFamily: F.serif, fontSize: "clamp(30px, 8vw, 50px)", fontWeight: 300, color: "#FAF6F0", marginBottom: 14 }}>Our Portfolio</h1>
           <p style={{ color: "rgba(215,199,181,0.65)", maxWidth: 540, lineHeight: 1.78, fontSize: 15 }}>
             As Erowho Holdings Limited grows, this page showcases rental assets held within our long-term portfolio across Canada and the United States.
           </p>
@@ -1170,7 +1210,7 @@ export function PortfolioPage() {
       <div style={{ background: C.ivory, padding: "56px 28px 100px" }}>
         <div style={{ maxWidth: 1240, margin: "0 auto" }}>
           {loading ? <PageLoader /> : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 22 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(320px, 100%), 1fr))", gap: 22 }}>
               {properties.map(p => (
                 <div key={p.id} style={{ background: "#FFF", border: `1px solid ${C.stone}`, borderRadius: 14, overflow: "hidden" }}>
                   <div style={{ height: 190, overflow: "hidden", position: "relative" }}>
@@ -1237,7 +1277,7 @@ export function ProcessPage() {
       }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
           <Label light>How We Operate</Label>
-          <h1 style={{ fontFamily: F.serif, fontSize: 50, fontWeight: 300, color: "#FAF6F0", marginBottom: 14 }}>Our Process</h1>
+          <h1 style={{ fontFamily: F.serif, fontSize: "clamp(30px, 8vw, 50px)", fontWeight: 300, color: "#FAF6F0", marginBottom: 14 }}>Our Process</h1>
           <p style={{ color: "rgba(215,199,181,0.65)", fontSize: 15, lineHeight: 1.78 }}>
             From identifying a market to holding a property long-term — here is how Erowho Holdings Limited approaches rental property ownership.
           </p>
@@ -1316,7 +1356,7 @@ export function ContactPage() {
       }}>
         <div style={{ maxWidth: 700, margin: "0 auto" }}>
           <Label light>Get in Touch</Label>
-          <h1 style={{ fontFamily: F.serif, fontSize: 50, fontWeight: 300, color: "#FAF6F0", marginBottom: 10 }}>
+          <h1 style={{ fontFamily: F.serif, fontSize: "clamp(30px, 8vw, 50px)", fontWeight: 300, color: "#FAF6F0", marginBottom: 10 }}>
             Contact Erowho Holdings Limited
           </h1>
           <p style={{ color: "rgba(215,199,181,0.65)", fontSize: 15 }}>
@@ -1342,7 +1382,7 @@ export function ContactPage() {
               </p>
             </div>
           ) : (
-            <div style={{ background: "#FFF", border: `1px solid ${C.stone}`, borderRadius: 16, padding: "36px 32px", boxShadow: "0 4px 24px rgba(42,33,27,0.07)" }}>
+            <div className="form-card" style={{ background: "#FFF", border: `1px solid ${C.stone}`, borderRadius: 16, boxShadow: "0 4px 24px rgba(42,33,27,0.07)" }}>
               <h2 style={{ fontFamily: F.serif, fontSize: 26, fontWeight: 400, color: C.heading, marginBottom: 22 }}>Send a Message</h2>
               {error && <div style={{ marginBottom: 16 }}><ErrorMsg msg={error} /></div>}
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
