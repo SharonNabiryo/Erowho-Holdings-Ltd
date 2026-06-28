@@ -22,7 +22,7 @@ except ImportError:
 BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR   = os.path.dirname(BASE_DIR)
 STATIC_DIR = os.path.join(ROOT_DIR, "frontend", "dist")
-DB_PATH    = os.path.join(BASE_DIR, "erowho.db")
+DB_PATH    = "/tmp/erowho.db" if os.environ.get("VERCEL") else os.path.join(BASE_DIR, "erowho.db")
 SECRET_KEY = os.environ.get("SECRET_KEY", "erowho-dev-secret-change-in-production")
 ADMIN_USER = os.environ.get("ADMIN_USERNAME", "admin")
 ADMIN_PASS = os.environ.get("ADMIN_PASSWORD", "admin123")
@@ -627,6 +627,9 @@ def serve_react(path):
     if os.path.exists(index):
         return send_file(index)
     return jsonify({"error": "Frontend not built. Run: npm run build"}), 404
+
+# ── Module-level init (runs on Vercel import and local direct run) ────────────
+init_db()
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 if __name__ == "__main__":
