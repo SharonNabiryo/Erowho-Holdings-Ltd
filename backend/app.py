@@ -159,7 +159,7 @@ def get_properties():
         except ValueError:
             pass
 
-    sql += " ORDER BY created_at DESC"
+    sql += " ORDER BY is_featured DESC, created_at DESC"
     rows = db.execute(sql, params).fetchall()
     return jsonify([row_to_dict(r) for r in rows])
 
@@ -188,8 +188,18 @@ def get_property_by_slug(slug):
 @require_auth
 def admin_list_properties():
     db   = get_db()
-    rows = db.execute("SELECT * FROM properties ORDER BY created_at DESC").fetchall()
+    rows = db.execute("SELECT * FROM properties ORDER BY is_featured DESC, created_at DESC").fetchall()
     return jsonify([row_to_dict(r) for r in rows])
+
+@app.route("/api/admin/properties/slug/<slug>", methods=["GET"])
+@require_auth
+def admin_get_property_by_slug(slug):
+    """Admin preview — returns any property by slug, published or draft."""
+    db  = get_db()
+    row = db.execute("SELECT * FROM properties WHERE slug = ?", (slug,)).fetchone()
+    if not row:
+        return err("Property not found", 404)
+    return jsonify(row_to_dict(row))
 
 @app.route("/api/admin/properties", methods=["POST"])
 @require_auth
@@ -206,9 +216,9 @@ def create_property():
         INSERT INTO properties
         (title, slug, country, city, address_or_area, property_type,
          bedrooms, bathrooms, monthly_rent, availability_status,
-         description, amenities, is_published, image_url, gallery_images,
+         description, amenities, is_published, is_featured, image_url, gallery_images,
          created_at, updated_at)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     """, (
         data["title"].strip(), slug,
         data["country"].strip(), data["city"].strip(),
@@ -221,6 +231,7 @@ def create_property():
         (data.get("description") or "").strip(),
         json.dumps(data.get("amenities") or []),
         1 if data.get("is_published", True) else 0,
+        1 if data.get("is_featured", False) else 0,
         (data.get("image_url") or "").strip(),
         json.dumps(data.get("gallery_images") or []),
         now(), now(),
@@ -260,7 +271,7 @@ def update_property(pid):
           title=?, slug=?, country=?, city=?, address_or_area=?,
           property_type=?, bedrooms=?, bathrooms=?, monthly_rent=?,
           availability_status=?, description=?, amenities=?,
-          is_published=?, image_url=?, gallery_images=?, updated_at=?
+          is_published=?, is_featured=?, image_url=?, gallery_images=?, updated_at=?
         WHERE id=?
     """, (
         (data.get("title") or existing["title"]).strip(),
@@ -276,6 +287,7 @@ def update_property(pid):
         (data.get("description") if "description" in data else existing["description"] or "").strip(),
         json.dumps(data.get("amenities") if "amenities" in data else json.loads(existing["amenities"] or "[]")),
         1 if data.get("is_published", bool(existing["is_published"])) else 0,
+        1 if data.get("is_featured", bool(existing["is_featured"])) else 0,
         (data.get("image_url") if "image_url" in data else existing["image_url"] or "").strip(),
         json.dumps(data.get("gallery_images") if "gallery_images" in data else json.loads(existing["gallery_images"] or "[]")),
         now(), pid,
@@ -310,6 +322,22 @@ def toggle_publish(pid):
     row = db.execute("SELECT * FROM properties WHERE id = ?", (pid,)).fetchone()
     return jsonify(row_to_dict(row))
 
+@app.route("/api/admin/properties/<int:pid>/feature", methods=["PATCH"])
+@require_auth
+def toggle_feature(pid):
+    db  = get_db()
+    row = db.execute("SELECT * FROM properties WHERE id = ?", (pid,)).fetchone()
+    if not row:
+        return err("Property not found", 404)
+    new_val = 0 if row["is_featured"] else 1
+    db.execute(
+        "UPDATE properties SET is_featured=?, updated_at=? WHERE id=?",
+        (new_val, now(), pid),
+    )
+    db.commit()
+    row = db.execute("SELECT * FROM properties WHERE id = ?", (pid,)).fetchone()
+    return jsonify(row_to_dict(row))
+
 # ── Inquiry routes ─────────────────────────────────────────────────────────────
 @app.route("/api/inquiries", methods=["POST"])
 def create_inquiry():
@@ -319,11 +347,13 @@ def create_inquiry():
         return jsonify({"success": False, "error": "Validation failed", "fields": errors}), 400
 
     db     = get_db()
+    ts     = now()
     cursor = db.execute("""
         INSERT INTO inquiries
         (property_id, property_title, full_name, email, phone,
-         desired_move_in_date, number_of_occupants, message, status, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'New', ?)
+         desired_move_in_date, number_of_occupants, message, status,
+         admin_notes, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'New', '', ?, ?)
     """, (
         data.get("property_id"),
         (data.get("property_title") or "").strip(),
@@ -333,7 +363,7 @@ def create_inquiry():
         (data.get("desired_move_in_date") or "").strip(),
         (data.get("number_of_occupants") or "").strip(),
         (data.get("message") or "").strip(),
-        now(),
+        ts, ts,
     ))
     db.commit()
     return jsonify({"success": True, "id": cursor.lastrowid}), 201
@@ -347,18 +377,20 @@ def contact():
         return jsonify({"success": False, "error": "Validation failed", "fields": errors}), 400
 
     db     = get_db()
+    ts     = now()
     cursor = db.execute("""
         INSERT INTO inquiries
         (property_id, property_title, full_name, email, phone,
-         desired_move_in_date, number_of_occupants, message, status, created_at)
-        VALUES (NULL, ?, ?, ?, ?, '', '', ?, 'New', ?)
+         desired_move_in_date, number_of_occupants, message, status,
+         admin_notes, created_at, updated_at)
+        VALUES (NULL, ?, ?, ?, ?, '', '', ?, 'New', '', ?, ?)
     """, (
         (data.get("inquiry_type") or "General Contact"),
         data["full_name"].strip(),
         data["email"].strip(),
         (data.get("phone") or "").strip(),
         (data.get("message") or "").strip(),
-        now(),
+        ts, ts,
     ))
     db.commit()
     return jsonify({"success": True, "id": cursor.lastrowid}), 201
@@ -372,17 +404,36 @@ def list_inquiries():
 
 @app.route("/api/admin/inquiries/<int:iid>", methods=["PATCH"])
 @require_auth
-def update_inquiry_status(iid):
-    data   = request.get_json() or {}
-    status = (data.get("status") or "").strip()
-    if status not in ALLOWED_INQUIRY_STATUSES:
-        return err(f"Status must be one of: {', '.join(sorted(ALLOWED_INQUIRY_STATUSES))}")
+def update_inquiry(iid):
+    data        = request.get_json() or {}
+    status      = data.get("status")
+    admin_notes = data.get("admin_notes")
+
+    if status is not None:
+        status = status.strip()
+        if status not in ALLOWED_INQUIRY_STATUSES:
+            return err(f"Status must be one of: {', '.join(sorted(ALLOWED_INQUIRY_STATUSES))}")
+
+    if status is None and admin_notes is None:
+        return err("Provide status, admin_notes, or both")
+
     db = get_db()
     if not db.execute("SELECT id FROM inquiries WHERE id = ?", (iid,)).fetchone():
         return err("Inquiry not found", 404)
-    db.execute("UPDATE inquiries SET status=? WHERE id=?", (status, iid))
+
+    cols, vals = [], []
+    if status is not None:
+        cols.append("status=?"); vals.append(status)
+    if admin_notes is not None:
+        cols.append("admin_notes=?")
+        vals.append((admin_notes or "").strip() if isinstance(admin_notes, str) else "")
+    cols.append("updated_at=?"); vals.append(now())
+    vals.append(iid)
+
+    db.execute(f"UPDATE inquiries SET {', '.join(cols)} WHERE id=?", vals)
     db.commit()
-    return jsonify({"success": True, "id": iid, "status": status})
+    row = db.execute("SELECT * FROM inquiries WHERE id = ?", (iid,)).fetchone()
+    return jsonify(dict(row))
 
 # ── Admin stats ────────────────────────────────────────────────────────────────
 @app.route("/api/admin/stats", methods=["GET"])
@@ -394,6 +445,7 @@ def get_stats():
         "published":        db.execute("SELECT COUNT(*) FROM properties WHERE is_published=1").fetchone()[0],
         "available":        db.execute("SELECT COUNT(*) FROM properties WHERE availability_status='Available' AND is_published=1").fetchone()[0],
         "rented":           db.execute("SELECT COUNT(*) FROM properties WHERE availability_status='Rented'").fetchone()[0],
+        "featured":         db.execute("SELECT COUNT(*) FROM properties WHERE is_featured=1").fetchone()[0],
         "total_inquiries":  db.execute("SELECT COUNT(*) FROM inquiries").fetchone()[0],
         "new_inquiries":    db.execute("SELECT COUNT(*) FROM inquiries WHERE status='New'").fetchone()[0],
     })

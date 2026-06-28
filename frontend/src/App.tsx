@@ -74,6 +74,19 @@ export default function App() {
     }
   }, []);
 
+  // URL-param driven property preview: /?p=<slug>
+  // Admin (token in localStorage) uses the admin endpoint so draft previews work.
+  useEffect(() => {
+    const slug = new URLSearchParams(window.location.search).get("p");
+    if (!slug) return;
+    const fetchFn = api.hasToken()
+      ? api.admin.getPropertyBySlug(slug)
+      : api.properties.getBySlug(slug);
+    fetchFn
+      .then(prop => { setSelectedProp(prop); setPage("PropertyDetail"); })
+      .catch(() => { setSelectedProp(null); setPage("PropertyDetail"); });
+  }, []);
+
   const navigate = (p: string, data?: unknown) => {
     const target = p as Page;
     setPage(target);

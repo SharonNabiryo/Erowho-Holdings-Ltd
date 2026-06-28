@@ -34,9 +34,13 @@ CREATE TABLE IF NOT EXISTS properties (
     image_url           TEXT DEFAULT '',
     gallery_images      JSONB NOT NULL DEFAULT '[]',
     is_published        BOOLEAN NOT NULL DEFAULT TRUE,
+    is_featured         BOOLEAN NOT NULL DEFAULT FALSE,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE INDEX IF NOT EXISTS idx_properties_featured
+    ON properties (is_featured, is_published);
 
 CREATE INDEX IF NOT EXISTS idx_properties_published
     ON properties (is_published, availability_status);
@@ -60,6 +64,7 @@ CREATE TABLE IF NOT EXISTS inquiries (
     message              TEXT DEFAULT '',
     status               TEXT NOT NULL DEFAULT 'New'
                          CHECK (status IN ('New', 'Reviewed', 'Contacted', 'Closed')),
+    admin_notes          TEXT DEFAULT '',
     created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

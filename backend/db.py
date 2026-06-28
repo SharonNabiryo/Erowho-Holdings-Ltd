@@ -95,6 +95,7 @@ def row_to_dict(row) -> dict:
             except Exception:
                 d[field] = []
     d["is_published"] = bool(d.get("is_published", 0))
+    d["is_featured"]  = bool(d.get("is_featured", 0))
     return d
 
 # ── Schema ─────────────────────────────────────────────────────────────────────
@@ -114,6 +115,7 @@ CREATE TABLE IF NOT EXISTS properties (
     description         TEXT DEFAULT '',
     amenities           TEXT DEFAULT '[]',
     is_published        INTEGER NOT NULL DEFAULT 1,
+    is_featured         INTEGER NOT NULL DEFAULT 0,
     image_url           TEXT DEFAULT '',
     gallery_images      TEXT DEFAULT '[]',
     created_at          TEXT NOT NULL,
@@ -131,7 +133,9 @@ CREATE TABLE IF NOT EXISTS inquiries (
     number_of_occupants  TEXT DEFAULT '',
     message              TEXT DEFAULT '',
     status               TEXT NOT NULL DEFAULT 'New',
+    admin_notes          TEXT DEFAULT '',
     created_at           TEXT NOT NULL,
+    updated_at           TEXT DEFAULT '',
     FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE SET NULL
 );
 
@@ -145,12 +149,15 @@ CREATE TABLE IF NOT EXISTS admins (
 
 def _migrate(db):
     """Idempotent column additions — safe on every startup."""
-    for col, defn in [
-        ("image_url",      "TEXT DEFAULT ''"),
-        ("gallery_images", "TEXT DEFAULT '[]'"),
+    for table, col, defn in [
+        ("properties", "image_url",      "TEXT DEFAULT ''"),
+        ("properties", "gallery_images", "TEXT DEFAULT '[]'"),
+        ("properties", "is_featured",    "INTEGER NOT NULL DEFAULT 0"),
+        ("inquiries",  "admin_notes",    "TEXT DEFAULT ''"),
+        ("inquiries",  "updated_at",     "TEXT DEFAULT ''"),
     ]:
         try:
-            db.execute(f"ALTER TABLE properties ADD COLUMN {col} {defn}")
+            db.execute(f"ALTER TABLE {table} ADD COLUMN {col} {defn}")
             db.commit()
         except Exception:
             pass  # Column already exists
@@ -187,6 +194,7 @@ def _seed_properties(db):
         {
             "title": "Stonebridge Townhome",
             "slug": "stonebridge-townhome",
+            "is_featured": True,
             "country": "Canada", "city": "Toronto",
             "address_or_area": "Stonebridge Drive, North York",
             "property_type": "Townhome",
@@ -204,6 +212,7 @@ def _seed_properties(db):
         {
             "title": "Maple Row Residence",
             "slug": "maple-row-residence",
+            "is_featured": True,
             "country": "Canada", "city": "Vancouver",
             "address_or_area": "East Side, Vancouver",
             "property_type": "Single-Family Home",
@@ -272,15 +281,16 @@ def _seed_properties(db):
             INSERT OR IGNORE INTO properties
             (title, slug, country, city, address_or_area, property_type,
              bedrooms, bathrooms, monthly_rent, availability_status,
-             description, amenities, is_published, image_url, gallery_images,
+             description, amenities, is_published, is_featured, image_url, gallery_images,
              created_at, updated_at)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1,?,?,?,?)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1,?,?,?,?,?)
         """, (
             p["title"], p["slug"], p["country"], p["city"],
             p["address_or_area"], p["property_type"],
             p["bedrooms"], p["bathrooms"], p["monthly_rent"],
             p["availability_status"], p["description"],
             json.dumps(p["amenities"]),
+            1 if p.get("is_featured") else 0,
             p["image_url"], json.dumps([]),
             ts, ts,
         ))

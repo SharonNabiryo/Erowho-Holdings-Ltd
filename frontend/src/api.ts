@@ -82,6 +82,7 @@ export interface Property {
   image_url: string;
   gallery_images: string[];
   is_published: boolean;
+  is_featured: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -97,7 +98,9 @@ export interface Inquiry {
   number_of_occupants: string;
   message: string;
   status: "New" | "Reviewed" | "Contacted" | "Closed";
+  admin_notes: string;
   created_at: string;
+  updated_at: string;
 }
 
 export interface Stats {
@@ -105,6 +108,7 @@ export interface Stats {
   published: number;
   available: number;
   rented: number;
+  featured: number;
   total_inquiries: number;
   new_inquiries: number;
 }
@@ -147,14 +151,17 @@ export const api = {
 
   // ── Admin ────────────────────────────────────────────────────────────────────
   admin: {
-    listProperties:  ()                              => get<Property[]>("/api/admin/properties", true),
-    createProperty:  (data: Partial<Property>)       => post<Property>("/api/admin/properties", data, true),
-    updateProperty:  (id: number, data: Partial<Property>) => put<Property>(`/api/admin/properties/${id}`, data),
-    deleteProperty:  (id: number)                    => del<{ success: boolean; deleted: number }>(`/api/admin/properties/${id}`),
-    togglePublish:   (id: number)                    => patch<Property>(`/api/admin/properties/${id}/publish`, {}),
-    listInquiries:   ()                              => get<Inquiry[]>("/api/admin/inquiries", true),
-    updateInquiryStatus: (id: number, status: string) => patch<{ success: boolean }>(`/api/admin/inquiries/${id}`, { status }),
-    getStats:        ()                              => get<Stats>("/api/admin/stats", true),
+    listProperties:      ()                              => get<Property[]>("/api/admin/properties", true),
+    getPropertyBySlug:   (slug: string)                 => get<Property>(`/api/admin/properties/slug/${slug}`, true),
+    createProperty:      (data: Partial<Property>)      => post<Property>("/api/admin/properties", data, true),
+    updateProperty:      (id: number, data: Partial<Property>) => put<Property>(`/api/admin/properties/${id}`, data),
+    deleteProperty:      (id: number)                   => del<{ success: boolean; deleted: number }>(`/api/admin/properties/${id}`),
+    togglePublish:       (id: number)                   => patch<Property>(`/api/admin/properties/${id}/publish`, {}),
+    featureProperty:     (id: number)                   => patch<Property>(`/api/admin/properties/${id}/feature`, {}),
+    listInquiries:       ()                             => get<Inquiry[]>("/api/admin/inquiries", true),
+    updateInquiry:       (id: number, data: { status?: string; admin_notes?: string }) =>
+                           patch<Inquiry>(`/api/admin/inquiries/${id}`, data),
+    getStats:            ()                             => get<Stats>("/api/admin/stats", true),
   },
 
   inquiries: {
