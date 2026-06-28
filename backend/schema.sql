@@ -60,7 +60,8 @@ CREATE TABLE IF NOT EXISTS inquiries (
     message              TEXT DEFAULT '',
     status               TEXT NOT NULL DEFAULT 'New'
                          CHECK (status IN ('New', 'Reviewed', 'Contacted', 'Closed')),
-    created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_inquiries_status
@@ -113,6 +114,10 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER set_properties_updated_at
     BEFORE UPDATE ON properties
+    FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
+
+CREATE TRIGGER set_inquiries_updated_at
+    BEFORE UPDATE ON inquiries
     FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
 
 CREATE TRIGGER set_contact_inquiries_updated_at

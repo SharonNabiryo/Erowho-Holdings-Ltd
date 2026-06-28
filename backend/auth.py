@@ -18,10 +18,17 @@ except ImportError:
     sys.exit(1)
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "erowho-dev-secret-change-in-production")
-try:
-    TOKEN_TTL_SECONDS = int(os.environ.get("TOKEN_TTL_SECONDS") or "")
-except (ValueError, TypeError):
-    TOKEN_TTL_SECONDS = 60 * 60 * 24 * 7  # 7 days — safe fallback for invalid/missing value
+
+
+def get_int_env(name: str, default: int) -> int:
+    """Read an integer environment variable, returning default on any failure."""
+    try:
+        return int(os.environ.get(name) or "")
+    except (TypeError, ValueError):
+        return default
+
+
+TOKEN_TTL_SECONDS = get_int_env("TOKEN_TTL_SECONDS", 60 * 60 * 24 * 7)  # default 7 days
 
 
 def make_token(username: str) -> str:
