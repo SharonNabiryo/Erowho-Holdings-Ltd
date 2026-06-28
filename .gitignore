@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+env/
+
+# Database
+backend/erowho.db
+*.db
+*.sqlite
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Build sourcemaps (large, optional)
+frontend/dist/bundle.js.map
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Secrets
+.env
+.env.local

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Erowho Holdings Limited — Rental Properties Across Canada &amp; the United States</title>
+  <meta name="description" content="Erowho Holdings Limited acquires, owns, and manages income-producing rental properties across Canada and the United States." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=DM+Mono:wght@400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: #F7F1E8; color: #2A211B; font-family: 'DM Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    #root { min-height: 100vh; }
+    #loading {
+      position: fixed; inset: 0; background: #F7F1E8;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 9999; transition: opacity 0.4s;
+    }
+    #loading h1 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 28px; font-weight: 300; color: #2A211B; letter-spacing: 0.04em; margin-bottom: 6px; }
+    #loading p  { font-size: 10px; color: #B89B7B; letter-spacing: 0.22em; margin-bottom: 32px; }
+    .loading-bar { width: 180px; height: 1px; background: #D7C7B5; border-radius: 1px; overflow: hidden; }
+    .loading-bar-inner { height: 100%; background: #C8A86B; animation: load 1.2s ease-in-out infinite; }
+    @keyframes load { 0% { width: 0%; } 70% { width: 100%; } 100% { width: 100%; opacity: 0; } }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #F7F1E8; }
+    ::-webkit-scrollbar-thumb { background: #D7C7B5; border-radius: 3px; }
+    ::selection { background: #C8A86B30; }
+  </style>
+</head>
+<body>
+  <div id="loading">
+    <h1>Erowho Holdings Limited</h1>
+    <p>RENTAL PROPERTY HOLDINGS</p>
+    <div class="loading-bar"><div class="loading-bar-inner"></div></div>
+  </div>
+  <div id="root"></div>
+  <script>
+    window.API_BASE = "http://localhost:5001";
+  </script>
+  <script src="/bundle.js"></script>
+  <script>
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        var el = document.getElementById('loading');
+        if (el) { el.style.opacity = '0'; setTimeout(function(){ el.remove(); }, 400); }
+      }, 300);
+    });
+  </script>
+</body>
+</html>
