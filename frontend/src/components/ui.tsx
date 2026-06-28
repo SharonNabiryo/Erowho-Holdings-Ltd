@@ -176,7 +176,8 @@ export function Navbar({
           </span>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 30 }}>
+        {/* Desktop links */}
+        <div className="nav-desktop">
           <div style={{ display: "flex", gap: 26 }}>
             {links.map(([page, label]) => (
               <button key={page} className="nav-lnk" onClick={() => navigate(page)}
@@ -198,7 +199,44 @@ export function Navbar({
             View Rentals
           </button>
         </div>
+
+        {/* Hamburger — mobile only */}
+        <button className="nav-hamburger" onClick={() => setMenuOpen(o => !o)}
+          aria-label="Toggle menu"
+          style={{ color: onHero ? "#FAF6F0" : C.espresso }}>
+          <i className={`fas ${menuOpen ? "fa-xmark" : "fa-bars"}`} style={{ fontSize: 22 }} />
+        </button>
       </div>
+
+      {/* Mobile dropdown */}
+      {menuOpen && (
+        <div style={{
+          position: "absolute", top: 68, left: 0, right: 0, zIndex: 999,
+          background: "rgba(250,246,240,0.98)",
+          backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+          borderBottom: `1px solid ${C.stone}`,
+          padding: "8px 24px 20px",
+        }}>
+          {links.map(([page, label]) => (
+            <button key={page} onClick={() => { navigate(page); setMenuOpen(false); }}
+              style={{
+                display: "block", width: "100%", textAlign: "left",
+                padding: "13px 0", fontSize: 15,
+                color: currentPage === page ? C.espresso : C.muted,
+                fontWeight: currentPage === page ? 500 : 400,
+                background: "none", border: "none", cursor: "pointer",
+                borderBottom: `1px solid ${C.stone}`,
+              }}>
+              {label}
+            </button>
+          ))}
+          <button className="btn-primary"
+            onClick={() => { navigate("Rentals"); setMenuOpen(false); }}
+            style={{ marginTop: 16, width: "100%", padding: "13px 0", fontSize: 14 }}>
+            View Rentals
+          </button>
+        </div>
+      )}
     </nav>
   );
 }
@@ -212,11 +250,7 @@ export function Footer({ navigate }: { navigate: (p: string) => void }) {
   return (
     <footer style={{ background: C.espresso, padding: "60px 28px 32px" }}>
       <div style={{ maxWidth: 1240, margin: "0 auto" }}>
-        <div style={{
-          display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 54,
-          marginBottom: 44, paddingBottom: 40,
-          borderBottom: `1px solid rgba(215,199,181,0.12)`,
-        }}>
+        <div className="footer-grid" style={{ borderBottom: `1px solid rgba(215,199,181,0.12)` }}>
           <div>
             <p style={{ fontFamily: F.serif, fontSize: 22, color: "#FAF6F0", marginBottom: 3 }}>
               Erowho Holdings Limited

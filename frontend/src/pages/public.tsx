@@ -67,21 +67,23 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
         <div style={{ position: "absolute", inset: 0 }}>
           <img
             src={HERO_IMAGE}
-            alt="Beautiful rental home"
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            alt="Residential rental homes on a quiet street"
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", display: "block" }}
           />
+          {/* Warm amber-espresso gradient — strong left for text contrast, fades right to show the street */}
           <div style={{
             position: "absolute", inset: 0,
-            background: "linear-gradient(to right, rgba(58,28,8,0.74) 0%, rgba(62,32,10,0.54) 48%, rgba(40,18,4,0.18) 100%)",
+            background: "linear-gradient(to right, rgba(40,15,3,0.91) 0%, rgba(48,20,5,0.78) 30%, rgba(46,18,4,0.46) 58%, rgba(30,10,2,0.08) 100%)",
+          }} />
+          {/* Bottom vignette to anchor search box */}
+          <div style={{
+            position: "absolute", inset: 0,
+            background: "linear-gradient(to top, rgba(30,10,2,0.32) 0%, transparent 40%)",
           }} />
         </div>
 
         {/* Content */}
-        <div style={{
-          position: "relative", zIndex: 1,
-          maxWidth: 1240, margin: "0 auto", padding: "140px 28px 100px",
-          width: "100%",
-        }}>
+        <div className="hero-content" style={{ position: "relative", zIndex: 1 }}>
           <div style={{ maxWidth: 680 }}>
             <Label light>EROWHO HOLDINGS · CANADA &amp; UNITED STATES</Label>
             <h1 style={{
@@ -103,15 +105,17 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
             {/* Hero Search */}
             <div className="glass-card" style={{ padding: "22px 24px", maxWidth: 680, marginBottom: 36 }}>
               <p style={{ fontSize: 11, color: C.clay, letterSpacing: "0.14em", marginBottom: 14, fontWeight: 600 }}>
+                <i className="fas fa-magnifying-glass" style={{ marginRight: 7 }} />
                 FIND A RENTAL
               </p>
-              <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr 1fr auto", gap: 10 }}>
+              <div className="hero-search-grid">
+                {/* Location */}
                 <div>
                   <label style={{ fontSize: 10, color: C.muted, letterSpacing: "0.1em", display: "block", marginBottom: 5 }}>LOCATION</label>
                   <div style={{ position: "relative" }}>
-                    <i className="fas fa-magnifying-glass" style={{
+                    <i className="fas fa-location-dot" style={{
                       position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)",
-                      color: C.clay, fontSize: 12,
+                      color: C.clay, fontSize: 12, pointerEvents: "none",
                     }} />
                     <input
                       className="inp"
@@ -123,28 +127,44 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
                     />
                   </div>
                 </div>
+                {/* Bedrooms */}
                 <div>
                   <label style={{ fontSize: 10, color: C.muted, letterSpacing: "0.1em", display: "block", marginBottom: 5 }}>BEDROOMS</label>
-                  <select className="inp" value={heroSearch.beds} onChange={e => setHeroSearch({ ...heroSearch, beds: e.target.value })} style={{ cursor: "pointer" }}>
-                    <option value="">Any</option>
-                    {[1, 2, 3, 4].map(n => <option key={n} value={n}>{n}+</option>)}
-                  </select>
+                  <div style={{ position: "relative" }}>
+                    <i className="fas fa-bed" style={{
+                      position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)",
+                      color: C.clay, fontSize: 11, pointerEvents: "none", zIndex: 1,
+                    }} />
+                    <select className="inp" value={heroSearch.beds} onChange={e => setHeroSearch({ ...heroSearch, beds: e.target.value })} style={{ paddingLeft: 32, cursor: "pointer" }}>
+                      <option value="">Any</option>
+                      {[1, 2, 3, 4].map(n => <option key={n} value={n}>{n}+</option>)}
+                    </select>
+                  </div>
                 </div>
+                {/* Max Rent */}
                 <div>
                   <label style={{ fontSize: 10, color: C.muted, letterSpacing: "0.1em", display: "block", marginBottom: 5 }}>MAX RENT</label>
-                  <input
-                    className="inp"
-                    type="number"
-                    value={heroSearch.maxRent}
-                    onChange={e => setHeroSearch({ ...heroSearch, maxRent: e.target.value })}
-                    placeholder="No limit"
-                  />
+                  <div style={{ position: "relative" }}>
+                    <i className="fas fa-dollar-sign" style={{
+                      position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)",
+                      color: C.clay, fontSize: 12, pointerEvents: "none",
+                    }} />
+                    <input
+                      className="inp"
+                      type="number"
+                      value={heroSearch.maxRent}
+                      onChange={e => setHeroSearch({ ...heroSearch, maxRent: e.target.value })}
+                      placeholder="No limit"
+                      style={{ paddingLeft: 30 }}
+                    />
+                  </div>
                 </div>
+                {/* Search button */}
                 <button
                   className="btn-primary"
                   onClick={doHeroSearch}
-                  style={{ padding: "10px 20px", marginTop: 21, whiteSpace: "nowrap" }}>
-                  <i className="fas fa-search" style={{ marginRight: 7 }} />
+                  style={{ padding: "10px 20px", marginTop: 21, whiteSpace: "nowrap", alignSelf: "flex-end" }}>
+                  <i className="fas fa-magnifying-glass" style={{ marginRight: 7 }} />
                   Search
                 </button>
               </div>

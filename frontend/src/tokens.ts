@@ -160,4 +160,36 @@ export const GLOBAL_CSS = `
   .section-label {
     font-size: 10px; letter-spacing: 0.22em; font-weight: 500; text-transform: uppercase;
   }
+
+  /* ── Responsive: Navbar ── */
+  .nav-desktop  { display: flex; align-items: center; gap: 30px; }
+  .nav-hamburger { display: none; background: none; border: none; cursor: pointer; padding: 8px 4px; line-height: 1; }
+  @media (max-width: 860px) {
+    .nav-desktop  { display: none !important; }
+    .nav-hamburger { display: flex !important; align-items: center; justify-content: center; }
+  }
+
+  /* ── Responsive: Hero search grid ── */
+  .hero-search-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr auto; gap: 10px; }
+  @media (max-width: 640px) {
+    .hero-search-grid { grid-template-columns: 1fr !important; }
+  }
+
+  /* ── Responsive: Hero content padding ── */
+  .hero-content { padding: 140px 28px 100px; width: 100%; max-width: 1240px; margin: 0 auto; }
+  @media (max-width: 640px) {
+    .hero-content { padding: 110px 20px 80px !important; }
+  }
+
+  /* ── Responsive: Footer ── */
+  .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 54px; margin-bottom: 44px; padding-bottom: 40px; border-bottom: 1px solid rgba(215,199,181,0.12); }
+  @media (max-width: 768px) {
+    .footer-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+  }
+
+  /* ── Responsive: Property card grid ── */
+  .prop-grid { display: grid; gap: 26px; }
+  @media (max-width: 640px) {
+    .prop-grid { grid-template-columns: 1fr !important; }
+  }
 `;
