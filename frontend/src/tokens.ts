@@ -58,7 +58,7 @@ export const STATUS_STYLE: Record<string, { bg: string; text: string; border: st
 
 // ── Unsplash Fallback Images by Property Type ──────────────────────────────────
 export const PROPERTY_IMAGES: Record<string, string> = {
-  "Townhome":           "https://images.unsplash.com/photo-2keCPb73aQY?auto=format&fit=crop&w=800&q=80",
+  "Townhome":           "https://images.unsplash.com/photo-1605146769289-440113cc3d00?auto=format&fit=crop&w=800&q=80",
   "Single-Family Home": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=800&q=80",
   "Duplex":             "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80",
   "Apartment":          "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80",
@@ -67,7 +67,7 @@ export const PROPERTY_IMAGES: Record<string, string> = {
   "default":            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
 };
 
-export const HERO_IMAGE = "https://images.unsplash.com/photo-jJGTInt14qg?auto=format&fit=crop&w=1920&q=85";
+export const HERO_IMAGE = "https://images.unsplash.com/photo-1730629651658-c730ddd1c6b9?auto=format&fit=crop&w=1920&q=85";
 
 // ── Global CSS ────────────────────────────────────────────────────────────────
 export const GLOBAL_CSS = `
