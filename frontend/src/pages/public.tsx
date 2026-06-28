@@ -72,7 +72,7 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
           />
           <div style={{
             position: "absolute", inset: 0,
-            background: "linear-gradient(135deg, rgba(42,33,27,0.78) 0%, rgba(58,48,40,0.60) 55%, rgba(42,33,27,0.40) 100%)",
+            background: "linear-gradient(to right, rgba(58,28,8,0.74) 0%, rgba(62,32,10,0.54) 48%, rgba(40,18,4,0.18) 100%)",
           }} />
         </div>
 
@@ -94,7 +94,7 @@ export function HomePage({ navigate }: { navigate: (p: string, data?: any) => vo
               <em style={{ color: C.gold, fontStyle: "italic" }}>Owned for the Long Term</em>
             </h1>
             <p style={{
-              fontSize: 17, color: "rgba(250,246,240,0.82)",
+              fontSize: 17, color: "rgba(250,246,240,0.95)",
               lineHeight: 1.82, marginBottom: 44, maxWidth: 530,
             }}>
               Erowho Holdings Limited acquires, owns, and manages income-producing rental properties across Canada and the United States, offering stable rental housing through a growing long-term portfolio.
