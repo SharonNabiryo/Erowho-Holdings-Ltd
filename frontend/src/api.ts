@@ -12,12 +12,22 @@
  */
 
 function resolveBase(): string {
+  // 1. Build-time env var — future Vite/esbuild --define support
+  try {
+    const v = (import.meta as any).env?.VITE_API_BASE_URL;
+    if (typeof v === "string" && v) return v;
+  } catch {}
+
+  // 2. Runtime injection — set in frontend/dist/index.html
+  //    Empty string explicitly means "same-origin"; do not fall through.
   const w = window as any;
-  // window.API_BASE is set explicitly in index.html. Empty string means same-origin.
   if (typeof w.API_BASE === "string") return w.API_BASE;
-  // Fallback: localhost dev server
+
+  // 3. Development: no index.html injection detected
   const h = window.location.hostname;
   if (h === "localhost" || h === "127.0.0.1") return "http://localhost:5001";
+
+  // 4. Production fallback — same-origin relative URLs
   return "";
 }
 
