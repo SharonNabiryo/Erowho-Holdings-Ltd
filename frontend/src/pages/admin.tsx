@@ -70,6 +70,26 @@ function downloadCsv(filename: string, rows: any[], cols: { key: string; label: 
   URL.revokeObjectURL(url);
 }
 
+// ── Image URL helpers ─────────────────────────────────────────────────────────
+function isUnsplashPageUrl(url: string): boolean {
+  return /https?:\/\/(www\.)?unsplash\.com\/photos\//i.test(url);
+}
+
+function validateImageUrl(url: string): string {
+  if (!url) return "";
+  if (isUnsplashPageUrl(url)) {
+    return (
+      "This is an Unsplash page link, not a direct image URL. " +
+      "Use the direct image URL from images.unsplash.com — it starts with " +
+      "https://images.unsplash.com/photo-… and includes sizing parameters."
+    );
+  }
+  if (!url.startsWith("http")) {
+    return "URL must start with https://.";
+  }
+  return "";
+}
+
 // ── useWindowWidth ────────────────────────────────────────────────────────────
 function useWindowWidth() {
   const [w, setW] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
@@ -231,6 +251,25 @@ export function AdminDashboard({
 
   useEffect(() => { load(); }, []);
 
+  // Reload inquiries (and stats) each time the inquiries tab is opened,
+  // so newly submitted inquiries appear without a full page refresh.
+  useEffect(() => {
+    if (tab !== "inquiries") return;
+    (async () => {
+      try {
+        const [inqs, st] = await Promise.all([
+          api.admin.listInquiries(),
+          api.admin.getStats(),
+        ]);
+        setInquiries(inqs);
+        setStats(st);
+        const notes: Record<number, string> = {};
+        inqs.forEach(inq => { notes[inq.id] = inq.admin_notes || ""; });
+        setNoteEdits(notes);
+      } catch { /* keep stale data on failure */ }
+    })();
+  }, [tab]);
+
   // Filtered lists
   const filteredProperties = properties.filter(p => {
     const q = pSearch.toLowerCase();
@@ -354,6 +393,15 @@ export function AdminDashboard({
         </div>
       )}
 
+      {/* Demo storage notice */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 10, background: "#FBF5E8", border: "1px solid #E0D0A0", borderRadius: 8, padding: "9px 14px", marginBottom: 20, fontSize: 12, color: "#8A6A2A", lineHeight: 1.55 }}>
+        <i className="fas fa-triangle-exclamation" style={{ flexShrink: 0, marginTop: 1 }} />
+        <span>
+          <strong>Demo storage:</strong> Data is saved in SQLite and may reset on server restart or Vercel cold start.
+          Inquiries and property changes will persist reliably once Supabase/Postgres is connected.
+        </span>
+      </div>
+
       {/* Tabs + toolbar */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
         <div>
@@ -386,6 +434,21 @@ export function AdminDashboard({
             </>
           )}
           {tab === "inquiries" && (
+            <>
+              <button
+                onClick={() => {
+                  api.admin.listInquiries().then(inqs => {
+                    setInquiries(inqs);
+                    const notes: Record<number, string> = {};
+                    inqs.forEach(inq => { notes[inq.id] = inq.admin_notes || ""; });
+                    setNoteEdits(notes);
+                    addToast(`Inquiries refreshed — ${inqs.length} total.`);
+                  }).catch((e: any) => addToast(e.message, "error"));
+                  api.admin.getStats().then(setStats).catch(() => {});
+                }}
+                style={{ background: "none", border: `1px solid ${C.stone}`, color: C.muted, padding: "7px 13px", borderRadius: 7, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+                <i className="fas fa-rotate-right" style={{ fontSize: 10 }} />Refresh
+              </button>
             <button onClick={() => downloadCsv("erowho-inquiries.csv", filteredInquiries, [
                 { key: "full_name",            label: "Name" },
                 { key: "email",                label: "Email" },
@@ -401,6 +464,7 @@ export function AdminDashboard({
               style={{ background: "none", border: `1px solid ${C.stone}`, color: C.muted, padding: "7px 13px", borderRadius: 7, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
               <i className="fas fa-file-csv" style={{ fontSize: 10 }} />Export CSV
             </button>
+            </>
           )}
         </div>
       </div>
@@ -509,8 +573,12 @@ export function AdminDashboard({
                   </button>
                 </div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                  <button onClick={() => window.open(`/?p=${p.slug}`, "_blank")}
-                    style={{ background: "none", border: `1px solid ${C.stone}`, color: C.muted, padding: "5px 11px", borderRadius: 6, fontSize: 11.5, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+                  <button
+                    onClick={() => p.is_published
+                      ? window.open(`/?p=${p.slug}`, "_blank")
+                      : addToast(`"${p.title}" is a draft — publish it first to preview publicly. Admins can still open /?p=${p.slug} while logged in.`, "error")}
+                    title={p.is_published ? "Preview on public site" : "Draft — must be published to preview publicly"}
+                    style={{ background: "none", border: `1px solid ${p.is_published ? C.stone : C.clay}`, color: p.is_published ? C.muted : C.clay, padding: "5px 11px", borderRadius: 6, fontSize: 11.5, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
                     <i className="fas fa-arrow-up-right-from-square" style={{ fontSize: 9 }} />Preview
                   </button>
                   <button onClick={() => { setEditTarget(p); navigate("AdminEditProperty"); }}
@@ -574,8 +642,12 @@ export function AdminDashboard({
                     </td>
                     <td style={{ padding: "12px 14px" }}>
                       <div style={{ display: "flex", gap: 6 }}>
-                        <button onClick={() => window.open(`/?p=${p.slug}`, "_blank")} title="Preview in new tab"
-                          style={{ background: "none", border: `1px solid ${C.stone}`, color: C.muted, padding: "5px 10px", borderRadius: 6, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+                        <button
+                          onClick={() => p.is_published
+                            ? window.open(`/?p=${p.slug}`, "_blank")
+                            : addToast(`"${p.title}" is a draft — publish it first to preview publicly. Admins can still open /?p=${p.slug} while logged in.`, "error")}
+                          title={p.is_published ? "Preview on public site" : "Draft — publish first to preview publicly"}
+                          style={{ background: "none", border: `1px solid ${p.is_published ? C.stone : C.clay}`, color: p.is_published ? C.muted : C.clay, padding: "5px 10px", borderRadius: 6, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
                           <i className="fas fa-arrow-up-right-from-square" style={{ fontSize: 10 }} />Preview
                         </button>
                         <button onClick={() => { setEditTarget(p); navigate("AdminEditProperty"); }}
@@ -713,30 +785,55 @@ export function AdminPropertyForm({
     is_featured:         editTarget?.is_featured ?? false,
   });
 
-  const [saving, setSaving] = useState(false);
-  const [saved,  setSaved]  = useState(false);
-  const [error,  setError]  = useState("");
+  const [saving, setSaving]           = useState(false);
+  const [saved,  setSaved]            = useState(false);
+  const [savedSlug, setSavedSlug]     = useState("");
+  const [error,  setError]            = useState("");
+  const [mainImgError, setMainImgError]       = useState(() => validateImageUrl(editTarget?.image_url || ""));
+  const [mainImgLoadFailed, setMainImgLoadFailed] = useState(false);
 
   const up = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }));
 
+  const handleImageUrlChange = (url: string) => {
+    setForm(f => ({ ...f, image_url: url }));
+    setMainImgError(validateImageUrl(url));
+    setMainImgLoadFailed(false);
+  };
+
   const save = async () => {
-    if (!form.title || !form.city || !form.monthly_rent) { setError("Title, city, and monthly rent are required."); return; }
+    if (!form.title || !form.city || !form.monthly_rent) {
+      setError("Title, city, and monthly rent are required.");
+      return;
+    }
+    const imgErr = validateImageUrl(form.image_url);
+    if (imgErr) {
+      setError("Main image URL is invalid: " + imgErr);
+      return;
+    }
+    // Warn about broken main image but don't block (user may intentionally clear it)
     setSaving(true); setError("");
     try {
-      const payload: Partial<Property> = {
+      const payload: any = {
         ...form,
         bedrooms:       parseFloat(form.bedrooms) || 1,
         bathrooms:      parseFloat(form.bathrooms) || 1,
         monthly_rent:   parseInt(form.monthly_rent) || 0,
-        amenities:      form.amenities.split(",").map(a => a.trim()).filter(Boolean),
-        gallery_images: form.gallery_images.split("\n").map(u => u.trim()).filter(Boolean),
-        slug:           form.slug || form.title.toLowerCase().replace(/\s+/g, "-"),
+        amenities:      form.amenities.split(",").map((a: string) => a.trim()).filter(Boolean),
+        gallery_images: form.gallery_images.split("\n").map((u: string) => u.trim()).filter(u => u && !isUnsplashPageUrl(u)),
       };
-      if (isEdit) await api.admin.updateProperty(editTarget!.id, payload);
-      else        await api.admin.createProperty(payload);
+      // Send slug only if the admin explicitly typed one.
+      // Empty slug = let the backend generate from title (avoids wrong client-side slugify).
+      if (!form.slug.trim()) delete payload.slug;
+      else payload.slug = form.slug.trim();
+
+      const result: Property = isEdit
+        ? await api.admin.updateProperty(editTarget!.id, payload)
+        : await api.admin.createProperty(payload);
+
+      setSavedSlug(result.slug);
       setSaved(true);
-      setTimeout(() => navigate("AdminDashboard"), 900);
+      setTimeout(() => navigate("AdminDashboard"), 1400);
     } catch (e: any) { setError(e.message); }
     finally { setSaving(false); }
   };
@@ -753,20 +850,42 @@ export function AdminPropertyForm({
           <button onClick={() => navigate("AdminDashboard")} style={{ background: "none", border: `1px solid ${C.stone}`, color: C.text, padding: "9px 20px", borderRadius: 8, fontSize: 13, cursor: "pointer" }}>Cancel</button>
           <button className="btn-brass" onClick={save} disabled={saving || saved}
             style={{ padding: "9px 24px", display: "flex", alignItems: "center", gap: 7 }}>
-            {saved ? <><i className="fas fa-check" /> Saved!</> : saving ? <><Spinner size={14} color={C.espresso} /> Saving…</> : <><i className="fas fa-floppy-disk" /> Save Property</>}
+            {saved ? <><i className="fas fa-check" /> Saved{savedSlug ? ` — slug: ${savedSlug}` : "!"}</> : saving ? <><Spinner size={14} color={C.espresso} /> Saving…</> : <><i className="fas fa-floppy-disk" /> Save Property</>}
           </button>
         </div>
       </div>
 
       {/* Image preview banner */}
-      {form.image_url ? (
-        <div style={{ marginBottom: 24, borderRadius: 12, overflow: "hidden", border: `1px solid ${C.stone}` }}>
-          <img src={form.image_url} alt="Property preview"
-            onError={e => { (e.target as HTMLImageElement).style.opacity = "0"; }}
-            style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }} />
-          <p style={{ padding: "8px 12px", fontSize: 11, color: C.muted, background: C.cream }}>
-            <i className="fas fa-image" style={{ marginRight: 6, color: C.clay }} />Main image preview
-          </p>
+      {form.image_url && !mainImgError ? (
+        <div style={{ marginBottom: 24, borderRadius: 12, overflow: "hidden", border: `1px solid ${mainImgLoadFailed ? "#d4a8a0" : C.stone}` }}>
+          {!mainImgLoadFailed && (
+            <img src={form.image_url} alt="Property preview"
+              onLoad={() => setMainImgLoadFailed(false)}
+              onError={() => setMainImgLoadFailed(true)}
+              style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }} />
+          )}
+          {mainImgLoadFailed ? (
+            <div style={{ padding: "24px 20px", textAlign: "center", background: "#FDF0EE" }}>
+              <i className="fas fa-image" style={{ fontSize: 28, color: "#d4a8a0", display: "block", marginBottom: 10 }} />
+              <p style={{ fontSize: 12.5, color: "#9A4040", lineHeight: 1.55, marginBottom: 10 }}>
+                Image failed to load. Check that the URL points directly to an image file, not a web page.
+              </p>
+              <button onClick={() => handleImageUrlChange("")}
+                style={{ background: "none", border: "1px solid #d4a8a0", color: "#9A4040", padding: "5px 14px", borderRadius: 6, fontSize: 12, cursor: "pointer" }}>
+                Clear URL
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 12px", background: C.cream }}>
+              <p style={{ fontSize: 11, color: C.muted }}>
+                <i className="fas fa-image" style={{ marginRight: 6, color: C.clay }} />Main image preview
+              </p>
+              <button onClick={() => handleImageUrlChange("")}
+                style={{ background: "none", border: "none", color: C.muted, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+                <i className="fas fa-xmark" style={{ fontSize: 10 }} />Remove
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <div style={{ marginBottom: 24 }}>
@@ -840,38 +959,94 @@ export function AdminPropertyForm({
         {/* Right — images */}
         <div style={{ background: "#FFF", border: `1px solid ${C.stone}`, borderRadius: 12, padding: "26px 22px", display: "flex", flexDirection: "column", gap: 16 }}>
           <h3 style={{ fontFamily: F.serif, fontSize: 18, fontWeight: 400, color: C.text, marginBottom: 4 }}>Images</h3>
-          <div style={{ background: C.sand, borderRadius: 10, padding: "14px 16px" }}>
-            <p style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.7 }}>
-              <i className="fas fa-circle-info" style={{ marginRight: 7, color: C.clay }} />
-              Enter direct image URLs. Unsplash format:<br />
-              <code style={{ fontFamily: F.mono, fontSize: 11, color: C.terracotta, display: "block", marginTop: 6, wordBreak: "break-all" }}>
-                https://images.unsplash.com/photo-ID?auto=format&fit=crop&w=800&q=80
-              </code>
+
+          {/* File upload — coming soon */}
+          <div style={{ background: C.cream, border: `1.5px dashed ${C.stone}`, borderRadius: 10, padding: "14px 16px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+              <i className="fas fa-cloud-arrow-up" style={{ color: C.clay, fontSize: 13 }} />
+              <p style={{ fontSize: 12.5, color: C.muted, fontWeight: 500 }}>File Upload — Coming Soon</p>
+            </div>
+            <p style={{ fontSize: 11.5, color: C.subtle, lineHeight: 1.6 }}>
+              Direct file upload (JPG, PNG, WEBP) will be available once Supabase Storage is connected.
+              For now, use direct image URLs in the fields below.
             </p>
           </div>
+
+          {/* Main image URL */}
           <div>
             <Lbl t="MAIN IMAGE URL" />
-            <input className="inp" value={form.image_url} onChange={up("image_url")} placeholder="https://images.unsplash.com/photo-…" />
-            <p style={{ fontSize: 11, color: C.subtle, marginTop: 5 }}>Primary image on property cards and detail page.</p>
+            <input
+              className="inp"
+              value={form.image_url}
+              onChange={e => handleImageUrlChange(e.target.value)}
+              placeholder="https://images.unsplash.com/photo-…"
+              style={{ borderColor: mainImgError ? "#c07070" : undefined }}
+            />
+            {mainImgError ? (
+              <p style={{ fontSize: 11, color: "#9A4040", marginTop: 5, lineHeight: 1.55, background: "#FDF0EE", padding: "6px 10px", borderRadius: 6 }}>
+                <i className="fas fa-triangle-exclamation" style={{ marginRight: 5 }} />{mainImgError}
+              </p>
+            ) : (
+              <p style={{ fontSize: 11, color: C.subtle, marginTop: 5, lineHeight: 1.55 }}>
+                Use a direct image URL from <strong>images.unsplash.com</strong> or any URL ending in .jpg/.png/.webp.
+                Do not paste the regular Unsplash page link from the browser address bar.
+              </p>
+            )}
           </div>
+
+          {/* Gallery URLs */}
           <div>
-            <Lbl t="GALLERY IMAGES (one URL per line)" />
+            <Lbl t="GALLERY IMAGES (one direct URL per line)" />
             <textarea className="inp" value={form.gallery_images} onChange={up("gallery_images")} rows={5}
               style={{ resize: "vertical", fontFamily: F.mono, fontSize: 12 }}
               placeholder={"https://images.unsplash.com/photo-…\nhttps://images.unsplash.com/photo-…"} />
-            <p style={{ fontSize: 11, color: C.subtle, marginTop: 5 }}>One URL per line. Shown in property detail gallery.</p>
+            <p style={{ fontSize: 11, color: C.subtle, marginTop: 5 }}>
+              One direct image URL per line. Unsplash page links are skipped automatically.
+            </p>
           </div>
+
+          {/* Gallery preview */}
           {form.gallery_images && (
             <div>
               <p style={{ fontSize: 11, color: C.subtle, marginBottom: 8, letterSpacing: "0.08em", fontWeight: 600 }}>GALLERY PREVIEW</p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {form.gallery_images.split("\n").map((u, i) => u.trim() && (
-                  <div key={i} style={{ width: 70, height: 50, borderRadius: 6, overflow: "hidden", border: `1px solid ${C.stone}` }}>
-                    <img src={u.trim()} alt={`Gallery ${i + 1}`} onError={e => { (e.target as HTMLImageElement).style.opacity = "0.2"; }}
-                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                  </div>
-                ))}
+                {form.gallery_images.split("\n").map((rawUrl, i) => {
+                  const u = rawUrl.trim();
+                  if (!u) return null;
+                  const isPage = isUnsplashPageUrl(u);
+                  return (
+                    <div key={i} style={{ position: "relative", width: 72, height: 52, flexShrink: 0 }}>
+                      <div style={{ width: "100%", height: "100%", borderRadius: 6, overflow: "hidden", border: `1px solid ${isPage ? "#d4a8a0" : C.stone}` }}>
+                        {isPage ? (
+                          <div style={{ width: "100%", height: "100%", background: "#FDF0EE", display: "flex", alignItems: "center", justifyContent: "center" }} title="Unsplash page link — will be skipped">
+                            <i className="fas fa-triangle-exclamation" style={{ color: "#c07070", fontSize: 15 }} />
+                          </div>
+                        ) : (
+                          <img src={u} alt={`Gallery ${i + 1}`}
+                            onError={e => {
+                              const el = e.target as HTMLImageElement;
+                              el.style.display = "none";
+                              if (el.parentElement) el.parentElement.style.background = C.cream;
+                            }}
+                            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                        )}
+                      </div>
+                      {isPage && (
+                        <div style={{ position: "absolute", bottom: -16, left: 0, right: 0, textAlign: "center" }}>
+                          <span style={{ fontSize: 9, color: "#9A4040" }}>page link</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
+              {form.gallery_images.split("\n").some(u => isUnsplashPageUrl(u.trim())) && (
+                <p style={{ fontSize: 11, color: "#9A4040", marginTop: 18, lineHeight: 1.55 }}>
+                  <i className="fas fa-triangle-exclamation" style={{ marginRight: 5 }} />
+                  One or more gallery URLs are Unsplash page links and will be skipped on save.
+                  Use direct image URLs from <strong>images.unsplash.com</strong> instead.
+                </p>
+              )}
             </div>
           )}
         </div>
